@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 230 380">
+  <defs>
+    <clipPath id="c">
+      <rect x="0" y="56" width="230" height="270"/>
+    </clipPath>
+  </defs>
+  <!-- Background -->
+  <rect width="230" height="380" fill="#F3003E" rx="6"/>
+  <!-- Sunburst rays clipped to middle section -->
+  <g clip-path="url(#c)" fill="#FFC300">
+    <polygon points="115,190 332,156 332,224"/>
+    <polygon points="115,190 311,290 271,346"/>
+    <polygon points="115,190 215,386 150,407"/>
+    <polygon points="115,190 81,407 15,386"/>
+    <polygon points="115,190 -41,346 -81,290"/>
+    <polygon points="115,190 -102,224 -102,156"/>
+    <polygon points="115,190 -81,90 -41,35"/>
+    <polygon points="115,190 15,-6 81,-27"/>
+    <polygon points="115,190 150,-27 215,-6"/>
+    <polygon points="115,190 271,35 311,90"/>
+  </g>
+  <!-- Centre circle -->
+  <circle cx="115" cy="190" r="40" fill="#F3003E"/>
+  <!-- Outer border -->
+  <rect x="5" y="5" width="220" height="370" fill="none" stroke="#121212" stroke-width="3" rx="4"/>
+  <!-- Header / footer dividers -->
+  <line x1="5" y1="56" x2="225" y2="56" stroke="#121212" stroke-width="2"/>
+  <line x1="5" y1="326" x2="225" y2="326" stroke="#121212" stroke-width="2"/>
+  <!-- Header: corner stars + numeral -->
+  <text x="16" y="43" fill="#FFC300" font-size="22" font-family="serif">★</text>
+  <text x="214" y="43" fill="#FFC300" font-size="22" font-family="serif" text-anchor="end">★</text>
+  <text x="115" y="47" fill="#FFC300" font-size="26" font-family="Georgia, serif" font-weight="bold" text-anchor="middle">I</text>
+  <!-- Footer: corner stars + label -->
+  <text x="16" y="370" fill="#FFC300" font-size="22" font-family="serif">★</text>
+  <text x="214" y="370" fill="#FFC300" font-size="22" font-family="serif" text-anchor="end">★</text>
+  <text x="115" y="361" fill="#FFC300" font-size="12" font-family="Georgia, serif" font-style="italic" font-weight="bold" text-anchor="middle">Absolute Bumfuckery</text>
+</svg>
