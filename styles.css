@@ -601,6 +601,10 @@ ul { list-style: none; }
   .detail-card-col { justify-content: center; }
   .detail-card-img { max-width: 260px; }
 }
+@media (max-width: 768px) {
+  .tarot-fan { height: 340px; }
+  .tarot-card img { width: 130px; }
+}
 
 /* ---------- SHOWCASE ---------- */
 .showcase {
