@@ -61,6 +61,28 @@ document.addEventListener('mouseup',   () => document.body.classList.remove('is-
   updateNav();
 })();
 
+// ---------- Mobile hamburger ----------
+(function () {
+  const btn   = document.querySelector('.nav-hamburger');
+  const links = document.querySelector('.nav-links');
+  if (!btn || !links) return;
+
+  btn.addEventListener('click', () => {
+    const open = links.classList.toggle('is-open');
+    btn.classList.toggle('is-open', open);
+    btn.setAttribute('aria-expanded', open);
+  });
+
+  // close when a link is tapped
+  links.querySelectorAll('a').forEach(a => {
+    a.addEventListener('click', () => {
+      links.classList.remove('is-open');
+      btn.classList.remove('is-open');
+      btn.setAttribute('aria-expanded', false);
+    });
+  });
+})();
+
 // ---------- Smooth anchor scroll ----------
 document.querySelectorAll('a[href^="#"]').forEach(a => {
   a.addEventListener('click', e => {
