@@ -785,8 +785,19 @@ ul { list-style: none; }
   }
   .nav-links a::after { display: none; }
 
-  .nav-logo { justify-self: center; }
-  .nav-cta   { justify-self: end; }
+  .nav-logo { justify-self: end; }
+  .nav-logo img { height: 30px; }
+  .nav-cta  { display: none; }
+
+  .hero {
+    justify-content: flex-start;
+    padding-top: calc(4rem + 56px);
+  }
+
+  .hero-tag--social    { width: 120px; top: 62%; right: 4%; }
+  .hero-tag--video     { width: 100px; top: 68%; left: 3%; }
+  .hero-tag--packaging { width: 100px; top: 74%; right: 5%; }
+  .hero-tag--branding  { width: 90px;  top: 82%; left: 20%; }
 }
 
 /* ---------- RESPONSIVE ---------- */
