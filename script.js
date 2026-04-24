@@ -47,7 +47,7 @@ document.addEventListener('mouseup',   () => document.body.classList.remove('is-
       if (rect.top <= navBottom && rect.bottom >= navBottom) {
         const id = el.id || '';
         const cls = el.className || '';
-        const dark = ['services', 'dark-pov', 'showcase', 'cta-banner', 'footer', 'orgchart'].some(
+        const dark = ['services', 'dark-pov', 'showcase', 'cta-banner', 'footer', 'orgchart', 'b-attention', 'b-cta'].some(
           k => id.includes(k) || cls.includes(k)
         );
         isLight = !dark;

@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Brief → Result</title>
+<link href="https://fonts.googleapis.com/css2?family=Pirata+One&family=IM+Fell+English:ital@1&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   LADIES, TAYLOR — Design System
+   Yellow:  #ff003d   Dark:   #1A1410
+   Red:     #F9C222   Cream:  #F0E4B8
+   ============================================================ */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+/* ---- Custom cursors (match main site) ---- */
+*, *::before, *::after {
+  cursor: url('assets/images/cursor-default.png') 8 8, auto !important;
+}
+a, button, [role="button"], input, select, textarea {
+  cursor: url('assets/images/cursor-pointer.png') 8 8, pointer !important;
+}
+body.is-pressing,
+body.is-pressing * {
+  cursor: url('assets/images/cursor-pinching.png') 16 16, grabbing !important;
+}
+
+body {
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  background: #ff003d;
+  overflow: hidden;
+  width: 100vw; height: 100vh;
+  user-select: none;
+}
+
+/* Vignette — warm amber, not black */
+#vignette {
+  position: fixed; inset: 0;
+  background: radial-gradient(ellipse at center, transparent 35%, rgba(26,20,16,0.18) 100%);
+  pointer-events: none; z-index: 20;
+}
+
+/* Canvas container */
+#canvas-wrap {
+  position: fixed; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+}
+
+#canvas {
+  position: relative;
+  width: 1400px; height: 820px;
+  flex-shrink: 0;
+  transform: scale(0.68) translate(0px, 0px);
+  transform-origin: center center;
+  transition: transform 1s cubic-bezier(0.4, 0.0, 0.2, 1);
+  will-change: transform;
+}
+
+/* Dot grid — gold dots on yellow */
+#canvas::before {
+  content: '';
+  position: absolute; inset: 0;
+  background-image: radial-gradient(circle, #A8192A 1px, transparent 1px);
+  background-size: 32px 32px;
+  opacity: 0.22;
+  pointer-events: none;
+}
+
+/* SVG layer */
+#svg-layer {
+  position: absolute; top: 0; left: 0;
+  width: 1400px; height: 820px;
+  pointer-events: none;
+}
+
+/* ---- Flowchart nodes ---- */
+.fc {
+  position: absolute;
+  opacity: 0;
+  transform: translateY(10px) scale(0.94);
+  transition: opacity 0.65s ease 0.42s, transform 0.65s ease 0.42s;
+}
+.fc.show {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+/* Text variants */
+.t-black  { color: #1A1410; font-size: 16px; font-weight: 800; }
+.t-yellow { color: #F9C222; font-size: 13px; font-weight: 700; }
+.t-faded  { color: rgba(249,194,34,0.55); font-size: 11px; font-style: italic; }
+.t-red    { color: #F9C222; font-size: 30px; font-weight: 900; font-family: 'Pirata One', cursive; letter-spacing: 2px; }
+
+/* Meeting box — "Contact" button style: dark bg, yellow border, offset shadow */
+.box-dark {
+  background: #1A1410;
+  color: #ff003d;
+  font-family: 'Pirata One', cursive;
+  padding: 14px 22px;
+  border-radius: 4px;
+  border: 2.5px solid #ff003d;
+  box-shadow: 4px 4px 0 #ff003d;
+  font-size: 13px; font-weight: 400;
+  text-align: center; line-height: 1.5;
+  min-width: 120px;
+}
+.box-dark.show {
+  animation: mtgGlow 0.8s ease 0.42s both;
+}
+@keyframes mtgGlow {
+  0%   { box-shadow: 0 0 0 0 rgba(249,194,34,0); }
+  35%  { box-shadow: 6px 6px 0 2px rgba(249,194,34,0.9); }
+  100% { box-shadow: 4px 4px 0 #ff003d; }
+}
+
+/* Ellipses */
+.ellipse {
+  border-radius: 50%;
+  padding: 14px 18px;
+  font-size: 11px; text-align: center; line-height: 1.5;
+  width: 128px;
+}
+/* Repurposed to match site tag colors */
+.ellipse-teal   { border: 2px solid #6B46C1; color: #6B46C1; background: rgba(107,70,193,0.08); } /* purple — like Video Production tag */
+.ellipse-orange { border: 2px solid #F9C222; color: #F9C222; background: rgba(255,0,61,0.08); } /* red — like accent color */
+
+/* ---- SVG lines ---- */
+.svg-line {
+  fill: none; opacity: 0;
+  transition: opacity 0.9s ease 0.55s;
+  stroke: #A8192A; stroke-width: 1; /* gold lines */
+}
+.svg-line.show { opacity: 1; }
+.svg-line.teal  { stroke: #6B46C1; stroke-dasharray: 5 4; stroke-width: 1; }
+.svg-line.dark  { stroke: #1A1410; stroke-width: 2; }
+.svg-line.mag   { stroke: #F9C222; stroke-width: 2; }
+
+/* ---- Progress bar — red ---- */
+#progress-bar {
+  position: fixed; top: 0; left: 0; height: 4px;
+  background: #F9C222;
+  transition: width 0.7s ease;
+  z-index: 30;
+  box-shadow: 0 0 10px rgba(255,0,61,0.5);
+}
+
+#step-counter {
+  position: fixed; top: 16px; right: 22px;
+  font-size: 11px; color: #1A1410; letter-spacing: 1px;
+  font-weight: 700; z-index: 30;
+  opacity: 0.6;
+}
+
+/* Meeting badge — red like CTA */
+#meeting-badge {
+  position: fixed; top: 10px; left: 22px;
+  background: #F9C222;
+  color: #ff003d;
+  font-family: 'Pirata One', cursive;
+  border: 2px solid #1A1410;
+  box-shadow: 3px 3px 0 #1A1410;
+  padding: 5px 16px; border-radius: 4px;
+  font-size: 12px;
+  z-index: 30; opacity: 0;
+  transition: opacity 0.5s;
+}
+#meeting-badge.show { opacity: 1; }
+#meeting-badge.bump { animation: bump 0.5s ease; }
+@keyframes bump {
+  0%   { transform: scale(1) translate(0,0); }
+  40%  { transform: scale(1.25) translate(-2px,-2px); }
+  100% { transform: scale(1) translate(0,0); }
+}
+
+#controls {
+  position: fixed; bottom: 52px; left: 50%;
+  transform: translateX(-50%);
+  text-align: center; z-index: 30;
+}
+
+/* Clickable nodes */
+.fc.show { cursor: pointer; }
+
+/* "Click to start" hint */
+#click-hint {
+  position: fixed;
+  bottom: 22px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: 'IM Fell English', serif;
+  font-style: italic;
+  font-size: 16px;
+  color: #F9C222;
+  letter-spacing: 1px;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 30;
+  white-space: nowrap;
+  transition: opacity 0.8s ease;
+}
+
+#controls {
+  pointer-events: none; /* captions are display only, no blocking clicks */
+}
+#controls #next-btn {
+  pointer-events: all;
+}
+#click-hint.visible {
+  animation: hintPulse 2.2s ease-in-out infinite;
+}
+@keyframes hintPulse {
+  0%,100% { opacity: 0.4; }
+  50%      { opacity: 0.95; }
+}
+
+#step-caption {
+  font-family: 'IM Fell English', serif;
+  font-style: italic;
+  font-size: 14px; color: #F9C222;
+  margin-bottom: 18px; min-height: 22px;
+  transition: opacity 0.3s;
+  max-width: 500px; line-height: 1.7;
+  opacity: 0.85;
+}
+
+/* "Sign Up" style button — red bg, dark offset border, yellow text */
+#next-btn {
+  font-family: 'Pirata One', cursive;
+  background: #F9C222;
+  color: #ff003d;
+  border: 2.5px solid #1A1410;
+  box-shadow: 4px 4px 0 #1A1410;
+  padding: 14px 46px;
+  border-radius: 4px;
+  font-size: 16px;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: box-shadow 0.1s, transform 0.1s;
+}
+#next-btn:hover {
+  box-shadow: 2px 2px 0 #1A1410;
+  transform: translate(2px, 2px);
+}
+#next-btn:active { box-shadow: 0 0 0 #1A1410; transform: translate(4px, 4px); }
+
+/* "Contact" style override for final button */
+#next-btn.dark-style {
+  background: #1A1410;
+  color: #ff003d;
+  border-color: #ff003d;
+  box-shadow: 4px 4px 0 #ff003d;
+}
+#next-btn.dark-style:hover {
+  box-shadow: 2px 2px 0 #ff003d;
+  transform: translate(2px, 2px);
+}
+
+/* ---- Intro screen ---- */
+#intro {
+  position: fixed; inset: 0; z-index: 100;
+  background: #ff003d;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  transition: opacity 0.9s ease;
+}
+#intro.fade-out { opacity: 0; pointer-events: none; }
+
+.intro-title {
+  font-family: 'Pirata One', cursive;
+  font-size: clamp(2.4rem, 7vw, 5.5rem);
+  color: #F9C222;
+  letter-spacing: 2px;
+  text-align: center;
+  line-height: 1.1;
+  margin-bottom: 1.2rem;
+  padding: 0 1rem;
+}
+.intro-cta {
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-size: 0.78rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(249,194,34,0.65);
+  animation: hintPulse 2.2s ease-in-out infinite;
+}
+
+.intro-label {
+  font-family: 'IM Fell English', serif;
+  font-style: italic;
+  font-size: 13px; letter-spacing: 3px; color: #F9C222;
+  text-transform: uppercase; margin-bottom: 20px;
+}
+.intro-h {
+  font-family: 'Pirata One', cursive;
+  font-size: 72px; color: #1A1410;
+  text-align: center;
+  line-height: 1.0; margin-bottom: 16px;
+}
+.intro-h em {
+  color: #F9C222;
+  font-style: normal;
+}
+.intro-p {
+  font-family: 'IM Fell English', serif;
+  font-style: italic;
+  font-size: 15px; color: #F9C222; text-align: center;
+  line-height: 1.8; margin-bottom: 52px;
+}
+
+/* "Sign Up" style start button */
+#start-btn {
+  font-family: 'Pirata One', cursive;
+  background: #F9C222;
+  color: #ff003d;
+  border: 2.5px solid #1A1410;
+  box-shadow: 5px 5px 0 #1A1410;
+  padding: 16px 60px;
+  border-radius: 4px;
+  font-size: 18px;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: box-shadow 0.1s, transform 0.1s;
+}
+#start-btn:hover {
+  box-shadow: 2px 2px 0 #1A1410;
+  transform: translate(3px, 3px);
+}
+#start-btn:active { box-shadow: 0 0 0 #1A1410; transform: translate(5px, 5px); }
+
+/* ---- Result overlay — dark section like the site ---- */
+#result-overlay {
+  position: fixed; inset: 0;
+  background: #1A1410;
+  z-index: 100;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none;
+  transition: opacity 1.3s ease;
+}
+#result-overlay.visible { opacity: 1; pointer-events: all; }
+
+.res-title {
+  font-family: 'Pirata One', cursive;
+  color: #ff003d;
+  font-size: 100px;
+  letter-spacing: 12px; margin-bottom: 6px;
+  text-shadow: 5px 5px 0 rgba(255,0,61,0.6);
+  animation: flicker 4s infinite 1.5s;
+}
+@keyframes flicker {
+  0%,90%,100% { opacity: 1; }
+  92% { opacity: 0.8; }
+  95% { opacity: 1; }
+  97% { opacity: 0.85; }
+}
+.res-sub {
+  font-family: 'IM Fell English', serif;
+  font-style: italic;
+  color: #F5D890; font-size: 13px;
+  letter-spacing: 3px;
+  margin-bottom: 56px;
+}
+.stats-grid {
+  display: grid; grid-template-columns: repeat(4, 162px);
+  gap: 16px; margin-bottom: 50px;
+}
+.stat-card {
+  /* "Contact" card style */
+  background: transparent;
+  border: 2.5px solid #ff003d;
+  box-shadow: 4px 4px 0 #ff003d;
+  border-radius: 4px; padding: 28px 18px; text-align: center;
+}
+.stat-num  {
+  font-family: 'Pirata One', cursive;
+  font-size: 62px; color: #F9C222; line-height: 1; margin-bottom: 10px;
+}
+#stat-h {
+  font-size: 36px; /* "F*ckton" is wider than a number */
+  letter-spacing: 1px;
+}
+.stat-label { font-size: 10px; color: #F5D890; text-transform: uppercase; letter-spacing: 1.5px; }
+.res-quote {
+  font-family: 'IM Fell English', serif;
+  font-style: italic;
+  color: #5A3E10; font-size: 14px;
+  text-align: center; max-width: 460px; line-height: 2.0; margin-bottom: 44px;
+}
+
+/* "Sign Up" style restart button on dark */
+#restart-btn {
+  font-family: 'Pirata One', cursive;
+  background: transparent;
+  color: #ff003d;
+  border: 2.5px solid #ff003d;
+  box-shadow: 4px 4px 0 #ff003d;
+  padding: 12px 32px; border-radius: 4px;
+  font-size: 14px; letter-spacing: 1px;
+  cursor: pointer;
+  transition: box-shadow 0.1s, transform 0.1s;
+}
+#restart-btn:hover {
+  box-shadow: 2px 2px 0 #ff003d;
+  transform: translate(2px, 2px);
+  color: #F9C222; border-color: #F9C222; box-shadow: 2px 2px 0 #F9C222;
+}
+
+/* ---- Mobile result screen ---- */
+@media (max-width: 680px) {
+  .res-title {
+    font-size: clamp(2.5rem, 14vw, 4rem);
+    letter-spacing: 6px;
+    margin-bottom: 4px;
+  }
+  .res-sub {
+    font-size: 10px;
+    letter-spacing: 2px;
+    margin-bottom: 24px;
+  }
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 20px;
+    width: min(90vw, 340px);
+  }
+  .stat-card { padding: 16px 10px; }
+  .stat-num  { font-size: 38px; margin-bottom: 6px; }
+  .stat-label { font-size: 8px; letter-spacing: 1px; }
+  .res-quote {
+    font-size: 11px;
+    line-height: 1.8;
+    margin-bottom: 24px;
+    max-width: 88vw;
+  }
+  #restart-btn { font-size: 12px; padding: 10px 24px; }
+}
+</style>
+</head>
+<body>
+
+<div id="vignette"></div>
+
+<!-- Intro splash -->
+<div id="intro" onclick="startJourney()" style="cursor:pointer">
+  <div class="intro-title">Why Modern Agencies Fail</div>
+  <div class="intro-cta">Click to start</div>
+</div>
+
+<!-- Chrome -->
+<div id="progress-bar" style="width:0%"></div>
+<div id="step-counter">Step <span id="cur-step">0</span> / 14</div>
+<div id="meeting-badge">Meetings: <span id="meeting-count">0</span></div>
+
+<!-- Canvas world -->
+<div id="click-hint">Click to start</div>
+
+<div id="canvas-wrap" onclick="handleCanvasClick(event)">
+  <div id="canvas">
+
+    <svg id="svg-layer" viewBox="0 0 1400 820"></svg>
+
+    <!-- Step 0: Brief -->
+    <div class="fc" id="n-brief" style="left:48px; top:276px"><span class="t-black">Brief</span></div>
+
+    <!-- Step 1: Clients -->
+    <div class="fc" id="n-acct-mgr"    style="left:48px;  top:316px"><span class="t-black">Account Manager</span></div>
+    <div class="fc" id="n-client-svc"  style="left:48px;  top:360px"><span class="t-black">Client Servicing</span></div>
+    <div class="fc" id="n-brand-strat" style="left:48px;  top:428px"><span class="t-faded">Brand Strategy</span></div>
+
+    <!-- Step 2: Cluster Head -->
+    <div class="fc" id="n-cluster" style="left:186px; top:165px"><span class="t-faded">Cluster Head or Team Lead</span></div>
+
+    <!-- Step 3: Creative team -->
+    <div class="fc" id="n-strat"     style="left:298px; top:252px"><span class="t-yellow">Creative Strategist</span></div>
+    <div class="fc" id="n-brand-mgr" style="left:298px; top:292px"><span class="t-yellow">Brand Manager</span></div>
+    <div class="fc" id="n-social"    style="left:298px; top:332px"><span class="t-yellow">Social Media Manager</span></div>
+    <div class="fc" id="n-copy"      style="left:298px; top:372px"><span class="t-yellow">Copy Writers</span></div>
+
+    <!-- Step 4: Design team -->
+    <div class="fc" id="n-graphic" style="left:530px; top:252px"><span class="t-yellow">Graphic Designer</span></div>
+    <div class="fc" id="n-video"   style="left:530px; top:292px"><span class="t-yellow">Video Editors</span></div>
+    <div class="fc" id="n-illus"   style="left:530px; top:332px"><span class="t-yellow">Illustrators</span></div>
+    <div class="fc" id="n-motion"  style="left:530px; top:372px"><span class="t-yellow">Motion Graphics Editor</span></div>
+
+    <!-- Step 5: Creative Director -->
+    <div class="fc" id="n-creative-dir" style="left:490px; top:155px; text-align:center; line-height:1.5">
+      <span class="t-faded">Creative Director<br>Art Director</span>
+    </div>
+
+    <!-- Step 6: Content & Design Meeting — purple ellipse (Video Production tag) -->
+    <div class="fc ellipse ellipse-teal" id="n-cd-meeting" style="left:750px; top:80px">
+      Content &amp; Design<br>Meeting
+    </div>
+
+    <!-- Step 7: Internal Meeting for Content — red ellipse -->
+    <div class="fc ellipse ellipse-orange" id="n-int-content" style="left:278px; top:490px">
+      Internal Meeting<br>for Content
+    </div>
+
+    <!-- Step 8: Internal Meeting 1 — dark "Contact" style box -->
+    <div class="fc box-dark" id="n-meeting1" style="left:852px; top:248px">
+      Internal<br>Meeting
+    </div>
+
+    <!-- Step 9: Format -->
+    <div class="fc" id="n-format" style="left:858px; top:352px">
+      <span class="t-faded">Format or Strategies</span>
+    </div>
+
+    <!-- Step 10: Extra stakeholders -->
+    <div class="fc" id="n-acct-dir" style="left:618px; top:472px"><span class="t-black" style="font-size:13px">Account Director</span></div>
+    <div class="fc" id="n-ceo"      style="left:618px; top:507px"><span class="t-black" style="font-size:13px">CEO</span></div>
+    <div class="fc" id="n-moms"     style="left:618px; top:542px"><span class="t-black" style="font-size:13px">Someone's Mom</span></div>
+    <div class="fc" id="n-perf"     style="left:618px; top:577px"><span class="t-black" style="font-size:13px">Performance Team</span></div>
+    <div class="fc" id="n-pretend"  style="left:558px; top:612px; white-space:normal; max-width:210px; line-height:1.5">
+      <span style="font-size:11px; color:#1A1410; font-weight:600">Someone who needs to contribute to pretend like they're working</span>
+    </div>
+
+    <!-- Step 11: Internal Meeting 2 -->
+    <div class="fc box-dark" id="n-meeting2" style="left:852px; top:460px">
+      Internal<br>Meeting 2
+    </div>
+
+    <!-- Step 12: Another round -->
+    <div class="fc" id="n-another-round" style="left:858px; top:560px; white-space:normal; max-width:188px; line-height:1.5">
+      <span class="t-faded" style="font-size:10px">Another round of changes due to lack of clarity</span>
+    </div>
+
+    <!-- Step 13: Internal Meeting 2 AGAIN -->
+    <div class="fc box-dark" id="n-meeting2b" style="left:852px; top:632px">
+      Internal<br>Meeting 2
+    </div>
+
+    <!-- Final: Result -->
+    <div class="fc" id="n-result" style="left:1076px; top:272px"><span class="t-red">Result</span></div>
+
+  </div>
+</div>
+
+<!-- Controls -->
+<div id="controls">
+  <div id="step-caption" style="opacity:0">Buckle up. A client just walked in with a brief.</div>
+  <button id="next-btn" onclick="nextStep()" style="display:none">Next →</button>
+</div>
+
+<!-- Result screen -->
+<div id="result-overlay">
+  <div class="res-title">Result</div>
+  <div class="res-sub">after a perfectly reasonable process</div>
+  <div class="stats-grid">
+    <div class="stat-card"><div class="stat-num" id="stat-m">0</div><div class="stat-label">Internal Meetings</div></div>
+    <div class="stat-card"><div class="stat-num" id="stat-p">0</div><div class="stat-label">People "Involved"</div></div>
+    <div class="stat-card"><div class="stat-num" id="stat-r">0</div><div class="stat-label">Rounds of Revisions</div></div>
+    <div class="stat-card"><div class="stat-num" id="stat-h">0</div><div class="stat-label">Hours Lost</div></div>
+  </div>
+  <div class="res-quote">
+    "It started as a simple brief.<br>
+    Somewhere between Internal Meeting 2 and Internal Meeting 2,<br>
+    someone's mom got involved. Nobody knows why."
+  </div>
+  <button id="restart-btn" onclick="restart()">Start Over (Just Like We Did)</button>
+</div>
+
+<script>
+const CX = 700, CY = 410;
+
+function cam(fx, fy, z, ms = 1000) {
+  const c = document.getElementById('canvas');
+  c.style.transition = `transform ${ms}ms cubic-bezier(0.4, 0.0, 0.2, 1)`;
+  c.style.transform  = `scale(${z}) translate(${CX - fx}px, ${CY - fy}px)`;
+}
+
+// Build SVG lines
+const LINE_DEFS = {
+  'l-brief-client': { d: 'M 78 294 L 78 316', cls: 'dark' },
+  'l-to-cluster':   { d: 'M 188 340 Q 196 238 212 202', cls: '' },
+  'l-cl-creative':  { d: 'M 288 198 Q 290 228 295 265', cls: '' },
+  'l-cl-design':    { d: 'M 334 196 Q 438 232 528 265', cls: '' },
+  'l-crea-bracket': { d: 'M 290 258 L 290 388 M 290 322 L 298 322', cls: '' },
+  'l-des-bracket':  { d: 'M 522 258 L 522 388 M 522 322 L 530 322', cls: '' },
+  'l-dir-l':        { d: 'M 507 178 L 422 258', cls: '' },
+  'l-dir-r':        { d: 'M 548 178 L 618 258', cls: '' },
+  'l-cd-g':         { d: 'M 820 120 L 688 258', cls: 'teal' },
+  'l-cd-v':         { d: 'M 820 120 L 688 298', cls: 'teal' },
+  'l-cd-s':         { d: 'M 785 116 L 455 258', cls: 'teal' },
+  'l-cd-b':         { d: 'M 785 116 L 455 298', cls: 'teal' },
+  'l-copy-oc':      { d: 'M 388 385 L 354 490', cls: '' },
+  'l-g-m1':         { d: 'M 720 268 L 852 275', cls: 'dark' },
+  'l-m1-dn':        { d: 'M 908 315 L 908 352', cls: '' },
+  'l-ad-m2':        { d: 'M 812 485 L 852 490', cls: '' },
+  'l-ceo-m2':       { d: 'M 652 518 L 852 490', cls: '' },
+  'l-mom-m2':       { d: 'M 770 554 L 852 490', cls: '' },
+  'l-pf-m2':        { d: 'M 800 589 L 852 490', cls: '' },
+  'l-pre-m2':       { d: 'M 762 630 L 852 490', cls: '' },
+  'l-m1-m2':        { d: 'M 908 315 L 908 460', cls: '' },
+  'l-m2-m2b':       { d: 'M 908 527 L 908 632', cls: '' },
+  'l-m2b-res':      { d: 'M 968 668 L 1076 300', cls: 'dark' },
+  'l-res-vert':     { d: 'M 1092 308 L 1092 415', cls: 'mag' },
+};
+
+const svg = document.getElementById('svg-layer');
+Object.entries(LINE_DEFS).forEach(([id, def]) => {
+  const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  p.id = id; p.setAttribute('d', def.d);
+  p.classList.add('svg-line');
+  if (def.cls) def.cls.split(' ').forEach(c => c && p.classList.add(c));
+  svg.appendChild(p);
+});
+
+const TOTAL = 14;
+let step = 0, meetings = 0;
+
+const STEPS = [
+  {
+    fx:100, fy:292, fz:2.6,
+    show:  ['n-brief'],
+    lines: [],
+    cap:   "It all starts here. One document. One ask. Surely this stays simple.",
+    mtg: 0,
+  },
+  {
+    fx:100, fy:348, fz:2.6,
+    show:  ['n-acct-mgr','n-client-svc'],
+    lines: ['l-brief-client'],
+    cap:   "It starts simply. A client. A brief. Two people. How hard can this be?",
+    mtg: 0,
+  },
+  {
+    fx:262, fy:212, fz:2.6,
+    show:  ['n-cluster'],
+    lines: ['l-to-cluster','l-cl-creative','l-cl-design'],
+    cap:   "A Cluster Head or Team Lead is assigned. The machine awakens.",
+    mtg: 0,
+  },
+  {
+    fx:378, fy:320, fz:2.5,
+    show:  ['n-strat','n-brand-mgr','n-social','n-copy'],
+    lines: ['l-crea-bracket'],
+    cap:   "A full creative team is assembled. Four people for one brief. Perfectly normal.",
+    mtg: 0,
+  },
+  {
+    fx:596, fy:320, fz:2.5,
+    show:  ['n-graphic','n-video','n-illus','n-motion'],
+    lines: ['l-des-bracket'],
+    cap:   "Oh — a full design team too. Eight people total. The brief is still unread.",
+    mtg: 0,
+  },
+  {
+    fx:524, fy:200, fz:2.4,
+    show:  ['n-creative-dir'],
+    lines: ['l-dir-l','l-dir-r'],
+    cap:   "A Creative Director and Art Director appear to oversee both teams. Oversight is crucial.",
+    mtg: 0,
+  },
+  {
+    fx:820, fy:122, fz:2.8,
+    show:  ['n-cd-meeting'],
+    lines: ['l-cd-g','l-cd-v','l-cd-s','l-cd-b'],
+    cap:   "A Content & Design Meeting is called. Calendars are blocked. This is definitely progress.",
+    mtg: 1,
+  },
+  {
+    fx:342, fy:535, fz:2.8,
+    show:  ['n-int-content'],
+    lines: ['l-copy-oc'],
+    cap:   "But first — an Internal Meeting just for content. Quick one. 30 minutes. They promise.",
+    mtg: 1,
+  },
+  {
+    fx:912, fy:278, fz:2.8,
+    show:  ['n-meeting1'],
+    lines: ['l-g-m1'],
+    cap:   "THE Internal Meeting. A deck was made. 54 slides. Three people skimmed it.",
+    mtg: 1,
+  },
+  {
+    fx:912, fy:368, fz:2.4,
+    show:  ['n-format'],
+    lines: ['l-m1-dn'],
+    cap:   "Now the Format-or-Strategies debate begins. Nobody agrees. Nobody ever will.",
+    mtg: 0,
+  },
+  {
+    fx:712, fy:558, fz:2.0,
+    show:  ['n-acct-dir','n-ceo','n-moms','n-perf','n-pretend'],
+    lines: ['l-ad-m2','l-ceo-m2','l-mom-m2','l-pf-m2','l-pre-m2'],
+    cap:   "New stakeholders materialise. The CEO. Account Director. Performance Team. Someone's Mom.",
+    mtg: 0,
+  },
+  {
+    fx:912, fy:492, fz:2.8,
+    show:  ['n-meeting2'],
+    lines: ['l-m1-m2'],
+    cap:   "Internal Meeting 2. The sequel nobody greenlit. Calendar invite says 'Quick sync — 15 min'.",
+    mtg: 1,
+  },
+  {
+    fx:920, fy:576, fz:2.4,
+    show:  ['n-another-round'],
+    lines: [],
+    cap:   "Another round of changes. Due to lack of clarity. In the brief that nobody read.",
+    mtg: 0,
+  },
+  {
+    fx:924, fy:656, fz:2.6,
+    show:  ['n-meeting2b'],
+    lines: ['l-m2-m2b','l-m2b-res'],
+    cap:   "Internal Meeting 2. Again. Same meeting. Different Tuesday. Someone's Mom has opinions.",
+    mtg: 1,
+    final: true,
+  },
+];
+
+function startJourney() {
+  const intro = document.getElementById('intro');
+  intro.classList.add('fade-out');
+  setTimeout(() => { intro.style.display = 'none'; }, 900);
+  // Go straight to Brief — no overview pause
+  setTimeout(() => nextStep(), 300);
+}
+
+function handleCanvasClick(e) {
+  // Don't fire if result overlay is visible
+  if (document.getElementById('result-overlay').classList.contains('visible')) return;
+  nextStep();
+}
+
+function nextStep() {
+  if (step >= TOTAL) return;
+  const s = STEPS[step];
+
+  cam(s.fx, s.fy, s.fz);
+
+  setTimeout(() => {
+    s.show.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.classList.add('show');
+    });
+    s.lines.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.classList.add('show');
+    });
+  }, 380);
+
+  if (s.mtg) {
+    meetings += s.mtg;
+    document.getElementById('meeting-count').textContent = meetings;
+    const badge = document.getElementById('meeting-badge');
+    badge.classList.add('show');
+    badge.classList.remove('bump');
+    void badge.offsetWidth;
+    badge.classList.add('bump');
+  }
+
+  // Hide "click to start" hint on first interaction
+  if (step === 0) {
+    const hint = document.getElementById('click-hint');
+    hint.classList.remove('visible');
+    hint.style.opacity = '0';
+  }
+
+  const cap = document.getElementById('step-caption');
+  cap.style.opacity = '0';
+  setTimeout(() => { cap.textContent = s.cap; cap.style.opacity = '1'; }, 260);
+
+  step++;
+  document.getElementById('progress-bar').style.width = (step / TOTAL * 100) + '%';
+  document.getElementById('cur-step').textContent = step;
+
+  if (s.final) {
+    setTimeout(() => {
+      document.getElementById('n-result').classList.add('show');
+      document.getElementById('l-res-vert').classList.add('show');
+      cam(1090, 320, 3.0, 1100);
+    }, 750);
+
+    // Show the result button and disable canvas click
+    const btn = document.getElementById('next-btn');
+    btn.textContent = 'See the Result →';
+    btn.style.display = 'inline-block';
+    btn.classList.add('dark-style');
+    btn.onclick = showResult;
+    document.getElementById('canvas-wrap').onclick = null;
+  }
+}
+
+function showResult() {
+  document.getElementById('result-overlay').classList.add('visible');
+  animateStat('stat-m', 4,  0);
+  animateStat('stat-p', 12, 280);
+  animateStat('stat-r', 2,  560);
+  setTimeout(() => { document.getElementById('stat-h').textContent = 'F*ckton'; }, 840);
+}
+
+function animateStat(id, target, delay) {
+  setTimeout(() => {
+    const el = document.getElementById(id);
+    let cur = 0;
+    const t = setInterval(() => { el.textContent = ++cur; if (cur >= target) clearInterval(t); }, 1200 / target);
+  }, delay);
+}
+
+function restart() {
+  document.getElementById('result-overlay').classList.remove('visible');
+  document.querySelectorAll('.fc').forEach(el => el.classList.remove('show'));
+  document.querySelectorAll('.svg-line').forEach(el => el.classList.remove('show'));
+  step = 0; meetings = 0;
+  const badge = document.getElementById('meeting-badge');
+  badge.classList.remove('show','bump');
+  document.getElementById('meeting-count').textContent = '0';
+  document.getElementById('progress-bar').style.width = '0%';
+  document.getElementById('cur-step').textContent = '0';
+  document.getElementById('step-caption').textContent = 'Buckle up. A client just walked in with a brief.';
+  const btn = document.getElementById('next-btn');
+  btn.textContent = 'Next →';
+  btn.style.display = 'none';
+  btn.classList.remove('dark-style');
+  btn.onclick = nextStep;
+  document.getElementById('canvas-wrap').onclick = handleCanvasClick;
+  const hint = document.getElementById('click-hint');
+  hint.classList.add('visible');
+  ['stat-m','stat-p','stat-r','stat-h'].forEach(id => document.getElementById(id).textContent = '0');
+  cam(700, 410, 0.68, 900);
+}
+
+// ---------- Press cursor ----------
+document.addEventListener('mousedown', () => document.body.classList.add('is-pressing'));
+document.addEventListener('mouseup',   () => document.body.classList.remove('is-pressing'));
+
+document.addEventListener('keydown', e => {
+  if (!['Space','ArrowRight','Enter'].includes(e.code)) return;
+  e.preventDefault();
+  const intro = document.getElementById('intro');
+  if (!intro.classList.contains('fade-out') && intro.style.display !== 'none') {
+    startJourney();
+  } else if (!document.getElementById('result-overlay').classList.contains('visible')) {
+    document.getElementById('next-btn').click();
+  }
+});
+</script>
+</body>
+</html>
