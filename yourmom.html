@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Your Mom — Ladies, Taylor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet" />
+<link rel="icon" type="image/png" href="assets/images/favicon.png" />
+<link rel="stylesheet" href="styles.css?v=2" />
+<style>
+  body.yourmom-page {
+    background: #FFC300;
+    min-height: 100vh;
+  }
+
+  /* ---- Collage stage ---- */
+  .ym-stage {
+    min-height: calc(100vh - 64px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    padding: 6rem 2rem 4rem;
+    overflow: hidden;
+  }
+
+  .ym-collage {
+    position: relative;
+    width: min(700px, 90vw);
+    height: clamp(500px, 65vw, 680px);
+  }
+
+  /* Centre piece — newspaper card */
+  .ym-card--main {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%) rotate(-3deg);
+    width: 42%;
+    z-index: 2;
+    filter: drop-shadow(6px 8px 18px rgba(0,0,0,0.22));
+  }
+
+  /* Left piece — golden retriever */
+  .ym-card--left {
+    position: absolute;
+    left: -2%;
+    bottom: 4%;
+    width: 32%;
+    z-index: 3;
+    transform: rotate(-13deg);
+    filter: drop-shadow(4px 6px 14px rgba(0,0,0,0.2));
+  }
+
+  /* Right piece — Mike Wazowski */
+  .ym-card--right {
+    position: absolute;
+    right: -2%;
+    top: 12%;
+    width: 30%;
+    z-index: 3;
+    transform: rotate(9deg);
+    filter: drop-shadow(4px 6px 14px rgba(0,0,0,0.2));
+  }
+
+  /* Mobile: stack vertically */
+  @media (max-width: 600px) {
+    .ym-collage {
+      height: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.5rem;
+    }
+    .ym-card--main,
+    .ym-card--left,
+    .ym-card--right {
+      position: relative;
+      left: auto; right: auto; top: auto; bottom: auto;
+      width: 75%;
+      transform: none;
+    }
+    .ym-card--main  { transform: rotate(-3deg); }
+    .ym-card--left  { transform: rotate(-8deg); }
+    .ym-card--right { transform: rotate(6deg); }
+  }
+</style>
+</head>
+<body class="yourmom-page">
+<script src="loader.js"></script>
+
+<!-- NAV -->
+<nav class="nav">
+  <button class="nav-hamburger" aria-label="Open menu" aria-expanded="false">
+    <span></span><span></span><span></span>
+  </button>
+  <ul class="nav-links">
+    <li><a href="index.html">The Taylors</a></li>
+    <li><a href="#">The Fri*nds</a></li>
+    <li><a href="branding.html">Branding</a></li>
+    <li><a href="yourmom.html">Your Mom</a></li>
+  </ul>
+  <a href="index.html" class="nav-logo" aria-label="Ladies, Taylor">
+    <img src="assets/images/logo-nav.png" alt="Ladies, Taylor" />
+  </a>
+  <a href="index.html#contact" class="pill-btn pill-btn--small nav-cta">Contact</a>
+</nav>
+
+<!-- COLLAGE STAGE -->
+<main class="ym-stage">
+  <div class="ym-collage">
+    <img src="assets/images/mom-1.svg" alt="" class="ym-card--main" />
+    <img src="assets/images/mom-2.svg" alt="" class="ym-card--left" />
+    <img src="assets/images/mom-3.svg" alt="" class="ym-card--right" />
+  </div>
+</main>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-col">
+      <h4 class="blackletter-h footer-h">Social</h4>
+      <ul>
+        <li><a href="#">LinkedIn</a></li>
+        <li><a href="#">Facebook</a></li>
+        <li><a href="#">Instagram</a></li>
+        <li><a href="#">Youtube</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4 class="blackletter-h footer-h">Contact</h4>
+      <p>Rauly@ladiestaylor.com</p>
+      <p>We're citizens of the world,<br/>Bangalore — 5600000</p>
+    </div>
+    <div class="footer-col">
+      <h4 class="blackletter-h footer-h">Pages</h4>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="branding.html">Branding</a></li>
+        <li><a href="#">Our Friends</a></li>
+        <li><a href="#">Meet The Fuckers</a></li>
+      </ul>
+    </div>
+    <div class="footer-logo">
+      <img src="assets/images/logo.png" alt="Ladies, Taylor logo" />
+    </div>
+  </div>
+  <p class="footer-copy">Ladies, Taylor 2026</p>
+</footer>
+
+<script src="script.js?v=4"></script>
+</body>
+</html>
