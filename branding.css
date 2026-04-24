@@ -123,14 +123,6 @@ body.branding-page {
   pointer-events: none;
 }
 
-/* Chat stage — fills entire art column */
-.b-chat-stage {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 10;
-}
-
 /* ---- Chat bubble animations ---- */
 @keyframes bubble-rise {
   0%   { opacity: 0; transform: translateY(12px) scale(0.72); }
@@ -233,6 +225,14 @@ body.branding-page {
     order: 5;
     position: relative;
     height: 56px;
+  }
+
+  /* Chat stage: on mobile the art div is sized to the Mona Lisa, so just fill it */
+  .b-chat-stage {
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
   }
 
   /* Art stage: absolute overlay — JS positions it exactly over the Mona Lisa */
