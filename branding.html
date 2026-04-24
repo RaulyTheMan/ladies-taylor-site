@@ -9,7 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet" />
 <link rel="icon" type="image/png" href="assets/images/favicon.png" />
 <link rel="stylesheet" href="styles.css" />
-<link rel="stylesheet" href="branding.css?v=7" />
+<link rel="stylesheet" href="branding.css?v=8" />
 </head>
 <body class="branding-page">
 <script src="loader.js"></script>
@@ -376,7 +376,7 @@ document.getElementById('brandingContactForm')?.addEventListener('submit', funct
   // Zones relative to the FULL SECTION width/height (Figma-derived positions)
   // Portrait sits at 74.7% from left, 17.5% from top.
   // Chat stage has left: -30vw offset so x coords are section-relative.
-  const BUBBLE_ZONES = [
+  const DESKTOP_BUBBLE_ZONES = [
     { x: '63%', y: '20%' },  // left of portrait, upper
     { x: '88%', y: '30%' },  // right of portrait, upper
     { x: '60%', y: '48%' },  // left of portrait, mid
@@ -387,7 +387,7 @@ document.getElementById('brandingContactForm')?.addEventListener('submit', funct
     { x: '86%', y: '42%' },  // right-mid
   ];
 
-  const EMOJI_ZONES = [
+  const DESKTOP_EMOJI_ZONES = [
     { x: '68%', y: '38%' },
     { x: '91%', y: '50%' },
     { x: '65%', y: '55%' },
@@ -395,6 +395,32 @@ document.getElementById('brandingContactForm')?.addEventListener('submit', funct
     { x: '74%', y: '68%' },
     { x: '82%', y: '62%' },
   ];
+
+  // Mobile zones: stage is sized to the Mona Lisa (full width, painting height)
+  // Mona is centered ~22-78% of screen, so keep x in that band
+  const MOBILE_BUBBLE_ZONES = [
+    { x: '14%', y: '10%' },
+    { x: '58%', y: '7%'  },
+    { x: '10%', y: '42%' },
+    { x: '60%', y: '48%' },
+    { x: '26%', y: '20%' },
+    { x: '64%', y: '26%' },
+    { x: '16%', y: '65%' },
+    { x: '56%', y: '68%' },
+  ];
+
+  const MOBILE_EMOJI_ZONES = [
+    { x: '32%', y: '32%' },
+    { x: '66%', y: '52%' },
+    { x: '18%', y: '55%' },
+    { x: '70%', y: '18%' },
+    { x: '44%', y: '72%' },
+    { x: '76%', y: '40%' },
+  ];
+
+  const isMobileLayout = () => window.innerWidth <= 900;
+  const BUBBLE_ZONES = isMobileLayout() ? MOBILE_BUBBLE_ZONES : DESKTOP_BUBBLE_ZONES;
+  const EMOJI_ZONES  = isMobileLayout() ? MOBILE_EMOJI_ZONES  : DESKTOP_EMOJI_ZONES;
 
   // Shuffle so zones don't cycle predictably
   function shuffle(arr) {
@@ -452,6 +478,29 @@ document.getElementById('brandingContactForm')?.addEventListener('submit', funct
   setTimeout(spawnBubble, 400);
   setTimeout(spawnBubble, 1600);
   setTimeout(spawnEmoji,  900);
+
+  /* ---- Mobile: position the art stage exactly over the Mona Lisa ---- */
+  function positionChatStageOnMobile() {
+    if (!isMobileLayout()) return;
+    const artDiv = document.querySelector('.b-statement-art');
+    const mona   = document.querySelector('.b-mona-frame');
+    const section = document.querySelector('.b-statement');
+    if (!artDiv || !mona || !section) return;
+
+    // offsetTop relative to the section (handles nested offsetParents)
+    let top = 0;
+    let el  = mona;
+    while (el && el !== section) {
+      top += el.offsetTop;
+      el   = el.offsetParent;
+    }
+    artDiv.style.top    = top + 'px';
+    artDiv.style.height = mona.offsetHeight + 'px';
+  }
+
+  // Run once layout is complete, and again if window resizes
+  setTimeout(positionChatStageOnMobile, 50);
+  window.addEventListener('resize', positionChatStageOnMobile);
 })();
 
 /* ---- Attention Economy: cursor-following pupils + random blinking ---- */

@@ -235,10 +235,16 @@ body.branding-page {
     height: 56px;
   }
 
-  /* Chat stage + bubbles: hide on mobile (too small, overflow issues) */
-  .b-statement-art  { order: 6; display: none; }
-  .b-chat-bubble,
-  .b-chat-emoji     { display: none !important; }
+  /* Art stage: absolute overlay — JS positions it exactly over the Mona Lisa */
+  .b-statement-art {
+    order: 6;           /* out of flex flow because position:absolute */
+    display: block;
+    position: absolute;
+    left: 0; right: 0;
+    pointer-events: none;
+    z-index: 20;
+    /* top + height injected by positionChatStageOnMobile() */
+  }
 }
 
 /* nav inherits all behaviour from styles.css + script.js — no override needed */
