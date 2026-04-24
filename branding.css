@@ -197,13 +197,48 @@ body.branding-page {
 }
 
 @media (max-width: 900px) {
-  .b-statement { grid-template-columns: 1fr; min-height: auto; }
-  .b-statement-copy { padding: 3rem 1.5rem 1.5rem; }
-  .b-statement-body-col { padding: 0 1.5rem 2rem; }
-  .b-statement-art { min-height: 360px; }
-  .b-mona-frame { left: 50%; transform: translateX(-50%); top: 8%; width: 36%; }
-  .b-velvet-rope { left: 30%; width: 40%; top: auto; bottom: 12%; }
-  .b-floor-strip { height: 80px; }
+  /* Switch to flex so absolutely-positioned children can rejoin the flow */
+  .b-statement {
+    display: flex;
+    flex-direction: column;
+    min-height: auto;
+  }
+
+  .b-statement-copy     { order: 1; padding: 3rem 1.5rem 1.5rem; }
+  .b-statement-body-col { order: 2; padding: 0 1.5rem 1.5rem; }
+
+  /* Mona Lisa: exit absolute positioning → becomes flex item, centered */
+  .b-mona-frame {
+    order: 3;
+    position: relative;
+    left: auto; top: auto;
+    transform: none;
+    width: 55%;
+    max-width: 240px;
+    margin: 1.5rem auto 0;
+  }
+
+  /* Velvet rope: below Mona */
+  .b-velvet-rope {
+    order: 4;
+    position: relative;
+    left: auto; top: auto;
+    width: 68%;
+    max-width: 300px;
+    margin: -6px auto 0;
+  }
+
+  /* Floor strip: after rope */
+  .b-floor-strip {
+    order: 5;
+    position: relative;
+    height: 56px;
+  }
+
+  /* Chat stage + bubbles: hide on mobile (too small, overflow issues) */
+  .b-statement-art  { order: 6; display: none; }
+  .b-chat-bubble,
+  .b-chat-emoji     { display: none !important; }
 }
 
 /* nav inherits all behaviour from styles.css + script.js — no override needed */
