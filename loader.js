@@ -47,16 +47,18 @@
       text-align: center;
     }
 
-    /* title — same as hero, centered, wraps naturally */
+    /* title — same as hero, centered, always one line */
     #lt-title {
-      font-size: clamp(3rem, 11vw, 9.5rem);
+      font-size: clamp(1rem, 8.5vw, 9.5rem);
       font-weight: normal;
       line-height: 0.95;
       letter-spacing: 0;
       text-align: center;
+      white-space: nowrap;
       width: 100%;
-      padding: 0 4vw;
+      padding: 0;
       box-sizing: border-box;
+      overflow: hidden;
     }
 
     .lt-char {
