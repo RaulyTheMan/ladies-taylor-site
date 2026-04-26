@@ -399,6 +399,7 @@
           mode: 'no-cors',
           body: new URLSearchParams(new FormData(form)),
         });
+        fbq('track', 'SubmitApplication');
         form.reset();
         btn.textContent = 'Sent!';
         setTimeout(() => { btn.textContent = original; btn.disabled = false; }, 3000);
