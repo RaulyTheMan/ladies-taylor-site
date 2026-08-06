@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_2" data-name="Layer 2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 202 202">
+  <defs>
+    <style>
+      .cls-1, .cls-2 {
+        fill: none;
+      }
+
+      .cls-3 {
+        fill: url(#linear-gradient);
+      }
+
+      .cls-4 {
+        fill: #e5e5e5;
+      }
+
+      .cls-5 {
+        letter-spacing: 0em;
+      }
+
+      .cls-5, .cls-6, .cls-7 {
+        fill: #ff003d;
+      }
+
+      .cls-8 {
+        font-family: SFProDisplay-HeavyItalic, 'SF Pro Display';
+        font-size: 56.18px;
+        font-style: italic;
+        font-weight: 800;
+      }
+
+      .cls-7 {
+        letter-spacing: 0em;
+      }
+
+      .cls-2 {
+        stroke: #000;
+        stroke-miterlimit: 10;
+        stroke-width: 5px;
+      }
+
+      .cls-9 {
+        clip-path: url(#clippath);
+      }
+    </style>
+    <linearGradient id="linear-gradient" x1="101" y1="209.65" x2="101" y2="-190.34" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#f5faff"/>
+      <stop offset="1" stop-color="#d9ebff"/>
+    </linearGradient>
+    <clipPath id="clippath">
+      <path class="cls-1" d="M1,101C1,18.89,18.89,1,101,1s100,17.89,100,100-17.89,100-100,100S1,183.11,1,101Z"/>
+    </clipPath>
+  </defs>
+  <g id="Layer_1-2" data-name="Layer 1">
+    <g>
+      <g>
+        <path class="cls-3" d="M101,201.5c-37.09,0-65.08-3.29-81.14-19.36S.5,138.09.5,101,3.79,35.92,19.86,19.86,63.91.5,101,.5s65.08,3.29,81.14,19.36,19.36,44.06,19.36,81.14-3.29,65.08-19.36,81.14-44.06,19.36-81.14,19.36Z"/>
+        <path class="cls-4" d="M101,1c82.11,0,100,17.89,100,100s-17.89,100-100,100S1,183.11,1,101,18.89,1,101,1M101,0C63.79,0,35.69,3.32,19.5,19.5,3.32,35.69,0,63.79,0,101s3.32,65.31,19.5,81.5,44.29,19.5,81.5,19.5,65.31-3.32,81.5-19.5c16.19-16.19,19.5-44.29,19.5-81.5s-3.32-65.31-19.5-81.5C166.31,3.32,138.21,0,101,0h0Z"/>
+      </g>
+      <g class="cls-9">
+        <text class="cls-8" transform="translate(-212.97 89.9)"><tspan x="0" y="0">BREAKING </tspan><tspan class="cls-6" x="296.74" y="0">NE</tspan><tspan class="cls-7" x="370.31" y="0">W</tspan><tspan class="cls-5" x="424.24" y="0">S</tspan></text>
+        <line class="cls-2" x1="213.44" y1="107.99" x2="-21.75" y2="107.99"/>
+      </g>
+    </g>
+  </g>
+</svg>

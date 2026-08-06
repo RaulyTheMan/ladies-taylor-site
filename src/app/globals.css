@@ -1,0 +1,100 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+
+  /* SF Pro isn't licensed for self-hosted web embedding, so this pulls it
+     natively on Apple devices via the system-font stack, falling back to
+     the closest equivalents elsewhere. */
+  --font-body:
+    -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display",
+    "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  /* Ladies Taylor brand palette — sampled from the Figma exports */
+  --color-lt-yellow: #ffce00;
+  --color-lt-red: #ff001e;
+  --color-lt-blue: #027dda;
+  --color-lt-dark: #202224;
+  --color-lt-cream: #fffbf2;
+  --color-lt-gray: #d9d9d9;
+  --color-lt-pink: #ff808f;
+  --color-lt-panel: #f1f1f1;
+
+  /* Reserved — sampled from the Figma exports, not yet assigned a role in
+     the UI. Keep for upcoming sections (brands of the month, blog, courses)
+     rather than deleting. */
+  --color-lt-pale-yellow: #ffe780;
+  --color-lt-sky: #81beed;
+  --color-lt-peach: #f6c69a;
+
+  /* Per-window-kind header colors, matched to the provided icon badge set */
+  --color-lt-purple: #731dd8;
+  --color-lt-green: #8aea92;
+  --color-lt-amber: #e89400;
+  --color-lt-pale-blue: #d9ebff;
+
+  /* Squircle corner scale — consolidates the site's existing de-facto radii */
+  --radius-squircle-xs: 4px;
+  --radius-squircle-sm: 12px;
+  --radius-squircle-md: 14px;
+  --radius-squircle-lg: 20px;
+  --radius-squircle-xl: 28px;
+
+  /* Micro type step — consolidates the sub-xs badge/label sizes that had
+     drifted into scattered arbitrary values (8/9/10px). text-xs (12px)
+     already covers the 11/13px cluster. */
+  --text-micro: 10px;
+
+  --font-display: var(--font-display);
+  --font-gothic: var(--font-gothic);
+  --font-body: var(--font-body);
+}
+
+body {
+  background: var(--color-lt-yellow);
+  color: var(--foreground);
+}
+
+/* The recurring "comic" hard-shadow outline used on buttons, cards & windows */
+.comic-border {
+  border: 2px solid #000;
+  box-shadow: 6px 6px 0 0 #000;
+}
+
+.comic-border-sm {
+  border: 2px solid #000;
+  box-shadow: 3px 3px 0 0 #000;
+}
+
+/* Flat window chrome — no drop-shadow, matches the desktop window reference art */
+.window-border {
+  border: 2px solid #000;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* -50 tracking on the sans-serif (SF Pro) typeface specifically. Since
+   letter-spacing is inherited and <body> carries .font-body, it would
+   otherwise cascade into every descendant — including .font-gothic (JSL)
+   and .font-display (Druk) headings — so those get an explicit reset back
+   to normal kerning. */
+.font-body {
+  letter-spacing: -0.05em;
+}
+
+.font-gothic,
+.font-display {
+  letter-spacing: normal;
+}

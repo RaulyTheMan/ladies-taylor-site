@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_2" data-name="Layer 2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1350">
+  <defs>
+    <style>
+      .cls-1 {
+        letter-spacing: 0em;
+      }
+
+      .cls-2 {
+        fill: #ffbc00;
+        font-family: Obviously-NarwBold, Obviously;
+        font-size: 248.08px;
+        font-weight: 700;
+      }
+
+      .cls-3 {
+        letter-spacing: 0em;
+      }
+
+      .cls-4 {
+        font-family: Obviously-Regu, Obviously;
+        font-size: 56.92px;
+      }
+
+      .cls-5 {
+        letter-spacing: -.03em;
+      }
+
+      .cls-6 {
+        letter-spacing: -.01em;
+      }
+
+      .cls-7 {
+        letter-spacing: -.03em;
+      }
+
+      .cls-8 {
+        letter-spacing: -.03em;
+      }
+
+      .cls-9 {
+        letter-spacing: 0em;
+      }
+
+      .cls-10 {
+        letter-spacing: 0em;
+      }
+
+      .cls-11 {
+        fill: #ea332f;
+        stroke: #000;
+        stroke-miterlimit: 10;
+        stroke-width: 2px;
+      }
+
+      .cls-12 {
+        fill: #f9f6e8;
+      }
+
+      .cls-13 {
+        fill: #f1f1f1;
+        font-family: SFProDisplay-Medium, 'SF Pro Display';
+        font-size: 40.5px;
+        font-weight: 500;
+      }
+    </style>
+  </defs>
+  <g id="Layer_1-2" data-name="Layer 1">
+    <g>
+      <rect class="cls-12" width="1080" height="1350"/>
+      <text class="cls-2" transform="translate(56.46 489.57)"><tspan class="cls-9" x="0" y="0">P</tspan><tspan class="cls-10" x="127.51" y="0">R</tspan><tspan class="cls-1" x="262.22" y="0">ICING?</tspan></text>
+      <text class="cls-4" transform="translate(64.13 287.24)"><tspan x="0" y="0">but wh</tspan><tspan class="cls-6" x="226.42" y="0">a</tspan><tspan x="266.04" y="0">t about</tspan></text>
+      <text class="cls-4" transform="translate(64.13 609.49)"><tspan x="0" y="0">Find out how much</tspan><tspan x="0" y="68.3">it will cost </tspan><tspan class="cls-7" x="350.45" y="68.3">f</tspan><tspan class="cls-3" x="377.31" y="68.3">or </tspan><tspan class="cls-8" x="464" y="68.3">y</tspan><tspan x="498.15" y="68.3">our </tspan><tspan class="cls-5" x="0" y="136.61">r</tspan><tspan x="27.32" y="136.61">equi</tspan><tspan class="cls-5" x="167.06" y="136.61">r</tspan><tspan x="194.38" y="136.61">ement</tspan></text>
+      <rect class="cls-11" x="69.88" y="1191.27" width="290.52" height="80.6" rx="21.06" ry="21.06"/>
+      <text class="cls-13" transform="translate(104.1415 1246.5543)"><tspan x="0" y="0">CLICK HERE</tspan></text>
+    </g>
+  </g>
+</svg>

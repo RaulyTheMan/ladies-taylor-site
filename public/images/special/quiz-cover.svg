@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_2" data-name="Layer 2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1350">
+  <defs>
+    <style>
+      .cls-1 {
+        font-size: 36.3px;
+      }
+
+      .cls-1, .cls-2, .cls-3 {
+        fill: #fff;
+      }
+
+      .cls-1, .cls-3 {
+        font-family: SFProDisplay-Medium, 'SF Pro Display';
+        font-weight: 500;
+      }
+
+      .cls-3 {
+        font-size: 46.94px;
+      }
+
+      .cls-4 {
+        fill: #5f16d3;
+      }
+
+      .cls-5, .cls-6 {
+        font-family: DrukWideTrial-Bold, 'Druk Wide Trial';
+        font-size: 248.08px;
+        font-weight: 700;
+      }
+
+      .cls-7 {
+        fill: #ea332f;
+        stroke-width: 3px;
+      }
+
+      .cls-7, .cls-6 {
+        stroke: #000;
+        stroke-miterlimit: 10;
+      }
+
+      .cls-6 {
+        fill: #ffbc00;
+        stroke-width: 4px;
+      }
+
+      .cls-8 {
+        letter-spacing: -.1em;
+      }
+
+      .cls-9 {
+        letter-spacing: -.1em;
+      }
+
+      .cls-10 {
+        letter-spacing: -.01em;
+      }
+
+      .cls-11 {
+        letter-spacing: -.04em;
+      }
+    </style>
+  </defs>
+  <g id="Layer_1-2" data-name="Layer 1">
+    <g>
+      <rect class="cls-4" width="1080" height="1350"/>
+      <text class="cls-5" transform="translate(103.78 508.41)"><tspan x="0" y="0">QUIZ</tspan></text>
+      <text class="cls-6" transform="translate(79.93 489.57)"><tspan x="0" y="0">QUIZ</tspan></text>
+      <text class="cls-3" transform="translate(320.11 273.57)"><tspan x="0" y="0">WH</tspan><tspan class="cls-8" x="77.4" y="0">A</tspan><tspan x="103.48" y="0">T DO </tspan><tspan class="cls-11" x="217" y="0">Y</tspan><tspan x="244.92" y="0">OU NEED</tspan></text>
+      <text class="cls-3" transform="translate(184.5751 1271.8668)"><tspan x="0" y="0">Find out what services </tspan><tspan class="cls-10" x="460.29" y="0">y</tspan><tspan x="483.37" y="0">ou will need</tspan></text>
+      <text class="cls-1" transform="translate(445.463 1023.0106)"><tspan x="0" y="0">S</tspan><tspan class="cls-9" x="22.05" y="0">T</tspan><tspan x="39.89" y="0">ART HERE</tspan></text>
+      <path class="cls-7" d="M422.57,856.74c0-97.47,19.96-117.43,117.43-117.43s117.43,19.96,117.43,117.43v-.99c0,97.47-19.96,117.43-117.43,117.43s-117.43-19.96-117.43-117.43"/>
+      <path class="cls-2" d="M579.29,850.84c-15.31-12.44-34.73-22.95-56.25-32.48-4.17-2.41-9.37.6-9.37,5.41-4.53,21.75-3.83,43.38,0,64.96,0,4.81,5.21,7.82,9.37,5.41,21.48-10.26,41.23-20.88,56.25-32.48,4.17-2.41,4.17-8.42,0-10.82Z"/>
+    </g>
+  </g>
+</svg>
