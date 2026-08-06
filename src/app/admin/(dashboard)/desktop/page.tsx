@@ -22,6 +22,8 @@ import {
   toggleWindowLive,
 } from "./actions";
 
+export const dynamic = "force-dynamic";
+
 const TABS = [
   { value: "all", label: "All" },
   { value: "articles", label: "Articles" },

@@ -18,6 +18,8 @@ import AdminSearchInput from "@/components/admin/AdminSearchInput";
 import ConfirmSubmitButton from "@/components/admin/ConfirmSubmitButton";
 import { deleteEvent } from "./actions";
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminEventsPage({
   searchParams,
 }: {

@@ -12,6 +12,8 @@ import {
 import AdminSearchInput from "@/components/admin/AdminSearchInput";
 import { updateContactStatus } from "./actions";
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminLeadsPage({
   searchParams,
 }: {

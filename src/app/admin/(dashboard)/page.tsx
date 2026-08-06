@@ -2,6 +2,8 @@ import Link from "next/link";
 import { createSessionClient } from "@/lib/supabase/server";
 import { ADMIN_H1_CLASS } from "@/lib/admin/ui";
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminDashboardPage() {
   const supabase = await createSessionClient();
 

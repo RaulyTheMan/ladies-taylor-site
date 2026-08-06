@@ -4,6 +4,8 @@ import { ADMIN_BUTTON_CLASS, ADMIN_H1_CLASS } from "@/lib/admin/ui";
 import MediaLibraryView from "@/components/admin/MediaLibraryView";
 import { uploadLibraryFile, deleteMediaFile } from "./actions";
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminMediaPage() {
   const supabase = await createSessionClient();
   const files = await listAllMedia(supabase);

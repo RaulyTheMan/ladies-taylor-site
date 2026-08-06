@@ -19,6 +19,8 @@ import AdminSearchInput from "@/components/admin/AdminSearchInput";
 import ConfirmSubmitButton from "@/components/admin/ConfirmSubmitButton";
 import { deleteBrand } from "./actions";
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminBrandsPage({
   searchParams,
 }: {
