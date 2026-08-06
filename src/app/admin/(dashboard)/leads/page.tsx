@@ -22,7 +22,10 @@ export default async function AdminLeadsPage({
   const { q, status } = await searchParams;
   const supabase = await createSessionClient();
 
-  const [{ data: contacts }, { data: subscribers }] = await Promise.all([
+  const [
+    { data: contacts, error: contactsError },
+    { data: subscribers, error: subscribersError },
+  ] = await Promise.all([
     supabase
       .from("contact_submissions")
       .select("*")
@@ -32,6 +35,13 @@ export default async function AdminLeadsPage({
       .select("*")
       .order("created_at", { ascending: false }),
   ]);
+
+  if (contactsError) {
+    console.error("[admin/leads] contact_submissions query failed:", contactsError);
+  }
+  if (subscribersError) {
+    console.error("[admin/leads] newsletter_subscribers query failed:", subscribersError);
+  }
 
   const query = (q ?? "").trim().toLowerCase();
   const filteredContacts = (contacts ?? []).filter((contact) => {
