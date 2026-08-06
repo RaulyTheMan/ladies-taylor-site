@@ -81,9 +81,14 @@ export default async function AdminLeadsPage({
               </tr>
             </thead>
             <tbody>
-              {filteredContacts.map((contact) => (
-                <tr key={contact.id} className={ADMIN_TABLE_ROW_CLASS}>
-                  <form action={updateContactStatus.bind(null, contact.id)} className="contents">
+              {filteredContacts.map((contact) => {
+                const formId = `contact-form-${contact.id}`;
+                return (
+                  <tr key={contact.id} className={ADMIN_TABLE_ROW_CLASS}>
+                    {/* A <form> can't be a direct child of <tr> — browsers foster-parent
+                        it out of the table during HTML parsing, which desyncs the parsed
+                        DOM from what React rendered and crashes hydration. Instead, the
+                        form lives outside the table and every field references it by id. */}
                     <td className={`${ADMIN_TABLE_CELL_CLASS} font-medium text-black`}>
                       {contact.name}
                     </td>
@@ -102,6 +107,7 @@ export default async function AdminLeadsPage({
                       <input
                         id={`notes-${contact.id}`}
                         name="notes"
+                        form={formId}
                         defaultValue={contact.notes ?? ""}
                         placeholder="Notes"
                         className={`${ADMIN_INPUT_CLASS} mt-0 w-40`}
@@ -114,6 +120,7 @@ export default async function AdminLeadsPage({
                       <select
                         id={`status-${contact.id}`}
                         name="status"
+                        form={formId}
                         defaultValue={contact.status}
                         className={`${ADMIN_INPUT_CLASS} mt-0 w-32`}
                       >
@@ -123,16 +130,22 @@ export default async function AdminLeadsPage({
                       </select>
                     </td>
                     <td className={ADMIN_TABLE_CELL_CLASS}>
-                      <button
-                        type="submit"
-                        className="rounded px-2 py-2 text-xs font-semibold text-black/70 underline hover:text-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2"
+                      <form
+                        id={formId}
+                        action={updateContactStatus.bind(null, contact.id)}
+                        className="contents"
                       >
-                        Save
-                      </button>
+                        <button
+                          type="submit"
+                          className="rounded px-2 py-2 text-xs font-semibold text-black/70 underline hover:text-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2"
+                        >
+                          Save
+                        </button>
+                      </form>
                     </td>
-                  </form>
-                </tr>
-              ))}
+                  </tr>
+                );
+              })}
               {filteredContacts.length === 0 && (
                 <tr>
                   <td colSpan={6} className={`${ADMIN_TABLE_CELL_CLASS} text-black/60`}>
