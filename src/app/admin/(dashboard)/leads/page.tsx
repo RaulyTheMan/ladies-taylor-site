@@ -22,14 +22,6 @@ export default async function AdminLeadsPage({
   const { q, status } = await searchParams;
   const supabase = await createSessionClient();
 
-  const {
-    data: { user: diagUser },
-  } = await supabase.auth.getUser();
-  console.log(
-    "[admin/leads] DIAG auth.getUser():",
-    JSON.stringify({ id: diagUser?.id, email: diagUser?.email, role: diagUser?.role })
-  );
-
   const [
     { data: contacts, error: contactsError },
     { data: subscribers, error: subscribersError },
@@ -44,14 +36,12 @@ export default async function AdminLeadsPage({
       .order("created_at", { ascending: false }),
   ]);
 
-  console.log(
-    "[admin/leads] DIAG contacts:",
-    JSON.stringify({ count: contacts?.length ?? null, error: contactsError })
-  );
-  console.log(
-    "[admin/leads] DIAG subscribers:",
-    JSON.stringify({ count: subscribers?.length ?? null, error: subscribersError })
-  );
+  if (contactsError) {
+    console.error("[admin/leads] contact_submissions query failed:", contactsError);
+  }
+  if (subscribersError) {
+    console.error("[admin/leads] newsletter_subscribers query failed:", subscribersError);
+  }
 
   const query = (q ?? "").trim().toLowerCase();
   const filteredContacts = (contacts ?? []).filter((contact) => {

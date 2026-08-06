@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useId, useRef } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ADMIN_INPUT_CLASS } from "@/lib/admin/ui";
 
@@ -23,6 +23,7 @@ export default function AdminSearchInput({
   const searchParams = useSearchParams();
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const initialValue = searchParams.get("q") ?? "";
+  const inputId = useId();
 
   function handleChange(next: string) {
     if (debounceRef.current) clearTimeout(debounceRef.current);
@@ -40,11 +41,14 @@ export default function AdminSearchInput({
   return (
     <input
       key={initialValue}
+      id={inputId}
+      name="q"
       type="search"
       defaultValue={initialValue}
       onChange={(e) => handleChange(e.target.value)}
       placeholder={placeholder}
       aria-label={placeholder}
+      autoComplete="off"
       className={`${ADMIN_INPUT_CLASS} mt-0 max-w-xs`}
     />
   );
