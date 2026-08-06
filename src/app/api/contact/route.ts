@@ -8,6 +8,7 @@ const contactSchema = z.object({
   name: z.string().trim().min(1).max(200),
   phone: z.string().trim().min(1).max(50),
   email: z.string().trim().email().max(200),
+  note: z.string().trim().max(2000).optional(),
 });
 
 export async function POST(request: Request) {
@@ -26,10 +27,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid submission." }, { status: 400 });
   }
 
+  const { name, phone, email, note } = parsed.data;
+
   const supabase = createPublicClient();
   const { error } = await supabase
     .from("contact_submissions")
-    .insert(parsed.data);
+    .insert({ name, phone, email, notes: note || null });
 
   if (error) {
     return NextResponse.json(
@@ -39,7 +42,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    await sendContactNotification(parsed.data);
+    await sendContactNotification({ name, phone, email, note });
   } catch {
     // Notification email is best-effort — the submission itself already saved.
   }

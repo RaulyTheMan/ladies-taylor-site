@@ -13,6 +13,8 @@ export function EmailContent() {
   const [email, setEmail] = useState("");
   const [note, setNote] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState(false);
   const idPrefix = useId();
 
   return (
@@ -38,9 +40,27 @@ export function EmailContent() {
         ) : (
           <form
             className="flex flex-col gap-4"
-            onSubmit={(e) => {
+            onSubmit={async (e) => {
               e.preventDefault();
-              setSubmitted(true);
+              setSubmitting(true);
+              setError(false);
+
+              try {
+                const res = await fetch("/api/contact", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ name, phone, email, note }),
+                });
+                if (res.ok) {
+                  setSubmitted(true);
+                } else {
+                  setError(true);
+                }
+              } catch {
+                setError(true);
+              } finally {
+                setSubmitting(false);
+              }
             }}
           >
             <div>
@@ -98,8 +118,18 @@ export function EmailContent() {
               />
             </div>
 
-            <button type="submit" className={`${PRIMARY_BUTTON_CLASS} self-start`}>
-              Send
+            {error && (
+              <p className="text-xs font-semibold text-lt-red">
+                Something went wrong. Please try again.
+              </p>
+            )}
+
+            <button
+              type="submit"
+              disabled={submitting}
+              className={`${PRIMARY_BUTTON_CLASS} self-start disabled:opacity-60`}
+            >
+              {submitting ? "Sending..." : "Send"}
             </button>
           </form>
         )}

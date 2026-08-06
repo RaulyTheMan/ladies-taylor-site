@@ -12,6 +12,7 @@ export async function sendContactNotification(data: {
   name: string;
   phone: string;
   email: string;
+  note?: string;
 }) {
   const resend = getResend();
   if (!resend || !notificationEmail) return;
@@ -20,7 +21,9 @@ export async function sendContactNotification(data: {
     from: "Ladies Taylor <onboarding@resend.dev>",
     to: notificationEmail,
     subject: `New contact form submission from ${data.name}`,
-    text: `Name: ${data.name}\nPhone: ${data.phone}\nEmail: ${data.email}`,
+    text: `Name: ${data.name}\nPhone: ${data.phone}\nEmail: ${data.email}${
+      data.note ? `\nNote: ${data.note}` : ""
+    }`,
   });
 }
 
