@@ -18,19 +18,19 @@ export default function Footer() {
             ladies.taylor
           </p>
           <nav className="flex flex-wrap gap-x-6 gap-y-2 text-xs font-bold uppercase tracking-wide text-lt-cream/70">
-            <Link href="/services" className="hover:text-lt-yellow">
+            <Link href="/services" prefetch={false} className="hover:text-lt-yellow">
               Services
             </Link>
-            <Link href="/best-of-bands" className="hover:text-lt-yellow">
+            <Link href="/best-of-bands" prefetch={false} className="hover:text-lt-yellow">
               Our Work
             </Link>
-            <Link href="/press-media" className="hover:text-lt-yellow">
+            <Link href="/press-media" prefetch={false} className="hover:text-lt-yellow">
               Press &amp; Media
             </Link>
-            <Link href="/events" className="hover:text-lt-yellow">
+            <Link href="/events" prefetch={false} className="hover:text-lt-yellow">
               Events
             </Link>
-            <Link href="/#feed-get-in-touch" className="hover:text-lt-yellow">
+            <Link href="/#feed-get-in-touch" prefetch={false} className="hover:text-lt-yellow">
               Contact
             </Link>
           </nav>

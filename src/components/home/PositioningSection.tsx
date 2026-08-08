@@ -19,6 +19,7 @@ export default function PositioningSection() {
             alt=""
             width={1024}
             height={1024}
+            loading="lazy"
             className="w-56 sm:w-72"
           />
         </motion.div>

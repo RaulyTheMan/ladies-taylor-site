@@ -27,7 +27,7 @@ export default function NavBar({ items }: { items: NavItem[] }) {
       )}
 
       <header className="relative z-[10001] flex items-center justify-between gap-4 px-6 py-5 md:px-10">
-        <Link href="/" className="shrink-0">
+        <Link href="/" className="shrink-0" prefetch={false}>
           <Image
             src="/images/logo/logo-mark.png"
             alt="Ladies Taylor"
@@ -67,6 +67,7 @@ export default function NavBar({ items }: { items: NavItem[] }) {
                             <NavigationMenu.Link asChild>
                               <Link
                                 href={sub.href}
+                                prefetch={false}
                                 className={`block rounded-squircle-sm px-3 py-2 text-left text-xs font-semibold ${
                                   si === 0
                                     ? "bg-lt-cream text-black"
@@ -88,6 +89,7 @@ export default function NavBar({ items }: { items: NavItem[] }) {
                   <NavigationMenu.Link asChild>
                     <Link
                       href={item.href}
+                      prefetch={false}
                       className="flex items-center gap-1 rounded-squircle-sm px-4 py-2 text-xs font-bold uppercase tracking-wide text-white outline-none transition-colors hover:bg-black/15"
                     >
                       {item.label}
@@ -106,6 +108,7 @@ export default function NavBar({ items }: { items: NavItem[] }) {
         <div className="flex shrink-0 items-center gap-4">
           <Link
             href="/#feed-get-in-touch"
+            prefetch={false}
             className="hidden text-xs font-bold uppercase tracking-wide text-lt-red sm:inline"
           >
             Enquire
@@ -113,6 +116,7 @@ export default function NavBar({ items }: { items: NavItem[] }) {
           <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>
             <Link
               href="/#feed-get-in-touch"
+              prefetch={false}
               className="comic-border-sm rounded-squircle-md bg-lt-dark px-5 py-2 text-xs font-bold uppercase tracking-wide text-white"
             >
               Contact
