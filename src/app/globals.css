@@ -77,6 +77,12 @@ body {
   border: 2px solid #000;
 }
 
+/* Hides the OS cursor while SiteCursor's custom dot+bubble is active. */
+.lt-cursor-none,
+.lt-cursor-none * {
+  cursor: none !important;
+}
+
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }

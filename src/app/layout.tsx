@@ -7,6 +7,7 @@ import {
   SITE_DESCRIPTION,
   DEFAULT_OG_IMAGE,
 } from "@/lib/site";
+import SiteCursor from "@/components/SiteCursor";
 
 const drukWide = localFont({
   src: [
@@ -57,6 +58,7 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col bg-lt-yellow font-body">
         {children}
+        <SiteCursor />
       </body>
     </html>
   );
