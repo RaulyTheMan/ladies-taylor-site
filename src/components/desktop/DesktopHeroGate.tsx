@@ -1,8 +1,9 @@
 "use client";
 
-import { useLayoutEffect, useState } from "react";
+import { useLayoutEffect, useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import type { DockApp, WindowDef } from "./types";
+import { getDesktopWindows, getDesktopDockApps } from "@/lib/desktop";
 
 // DesktopHero pulls in framer-motion (~195KB) and, via its live-chat window,
 // the full Supabase client SDK (~230KB) for a realtime subscription — over
@@ -17,26 +18,29 @@ import type { DockApp, WindowDef } from "./types";
 // ~400KB nobody on mobile can even see.
 const DesktopHero = dynamic(() => import("./DesktopHero"), { ssr: false });
 
-export default function DesktopHeroGate({
-  windowDefs,
-  dockApps,
-}: {
-  windowDefs: WindowDef[];
-  dockApps: DockApp[];
-}) {
+export default function DesktopHeroGate() {
   const [isDesktop, setIsDesktop] = useState(false);
+  const [windowDefs, setWindowDefs] = useState<WindowDef[]>([]);
+  const [dockApps, setDockApps] = useState<DockApp[]>([]);
 
   useLayoutEffect(() => {
     const mql = window.matchMedia("(min-width: 768px)");
-    // matchMedia doesn't exist during SSR, so this can only be read after
-    // mount — state starts false (matching the server render) and is
-    // corrected here, before paint, to avoid a visible flash on desktop.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsDesktop(mql.matches);
     const onChange = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
     mql.addEventListener("change", onChange);
     return () => mql.removeEventListener("change", onChange);
   }, []);
+
+  useEffect(() => {
+    if (!isDesktop) return;
+    // Only fetch desktop data when actually needed (desktop viewport)
+    Promise.all([getDesktopWindows(), getDesktopDockApps()]).then(
+      ([windows, apps]) => {
+        setWindowDefs(windows);
+        setDockApps(apps);
+      }
+    );
+  }, [isDesktop]);
 
   if (!isDesktop) return null;
   return <DesktopHero windowDefs={windowDefs} dockApps={dockApps} />;

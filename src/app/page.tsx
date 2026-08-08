@@ -8,14 +8,8 @@ import PositioningSection from "@/components/home/PositioningSection";
 import ContactSection from "@/components/home/ContactSection";
 import CtaBand from "@/components/home/CtaBand";
 import { homeNav } from "@/lib/nav";
-import { getDesktopWindows, getDesktopDockApps } from "@/lib/desktop";
 
-export default async function Home() {
-  const [windowDefs, dockApps] = await Promise.all([
-    getDesktopWindows(),
-    getDesktopDockApps(),
-  ]);
-
+export default function Home() {
   return (
     <>
       <main className="flex-1">
@@ -30,7 +24,7 @@ export default async function Home() {
             Ladies Taylor — Branding, Packaging &amp; Social Media Management
           </h1>
           <NavBar items={homeNav} />
-          <DesktopHeroGate windowDefs={windowDefs} dockApps={dockApps} />
+          <DesktopHeroGate />
         </div>
         <ServiceBand />
         <OurWork />
