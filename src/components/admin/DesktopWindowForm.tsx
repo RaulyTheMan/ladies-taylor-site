@@ -1,6 +1,8 @@
 "use client";
 
 import { useId, useState } from "react";
+import { useForm } from "@tanstack/react-form";
+import { z } from "zod";
 import NewsfeedItemsEditor from "@/components/admin/NewsfeedItemsEditor";
 import FileInputPreview from "@/components/admin/FileInputPreview";
 import VideoFileInput from "@/components/admin/VideoFileInput";
@@ -15,6 +17,8 @@ import {
   ADMIN_TEXTAREA_CLASS as textareaClass,
   ADMIN_LABEL_CLASS as labelClass,
 } from "@/lib/admin/ui";
+
+const requiredField = z.string().trim().min(1, "Required");
 
 const KIND_LABELS: Record<WindowKind, string> = {
   video: "Video",
@@ -45,7 +49,6 @@ export type DesktopWindowFormDefaults = {
   dateLabel?: string;
   emailBody?: string;
   ctaLabel?: string;
-  ctaHref?: string;
   newsfeedItems?: NewsfeedItem[];
 };
 
@@ -62,6 +65,13 @@ export default function DesktopWindowForm({
     defaults?.kind ?? lockKind ?? "article"
   );
   const kindId = useId();
+
+  // Native `action` submission is unchanged; this instance only drives
+  // inline validation messages. `required` stays as the real submission
+  // gate — see the matching note in BrandForm.tsx.
+  const form = useForm({
+    defaultValues: { title: defaults?.title ?? "" },
+  });
 
   return (
     <form action={action} className="mt-6 flex flex-col gap-5">
@@ -93,19 +103,33 @@ export default function DesktopWindowForm({
             </select>
           )}
         </div>
-        <div>
-          <label htmlFor="title" className={labelClass}>
-            Window Title <span aria-hidden="true">*</span>
-          </label>
-          <input
-            id="title"
-            name="title"
-            required
-            defaultValue={defaults?.title}
-            placeholder="New Launch.mp4"
-            className={inputClass}
-          />
-        </div>
+        <form.Field
+          name="title"
+          validators={{ onChange: ({ value }) => requiredField.safeParse(value).error?.issues[0]?.message }}
+        >
+          {(field) => (
+            <div>
+              <label htmlFor={field.name} className={labelClass}>
+                Window Title <span aria-hidden="true">*</span>
+              </label>
+              <input
+                id={field.name}
+                name={field.name}
+                required
+                value={field.state.value}
+                onChange={(e) => field.handleChange(e.target.value)}
+                onBlur={field.handleBlur}
+                placeholder="New Launch.mp4"
+                className={inputClass}
+              />
+              {field.state.meta.isTouched && field.state.meta.errors.length > 0 && (
+                <p className="mt-1 text-xs font-semibold text-red-600">
+                  {field.state.meta.errors.join(", ")}
+                </p>
+              )}
+            </div>
+          )}
+        </form.Field>
       </div>
 
       {(kind === "video" || kind === "article" || kind === "photo") && (
@@ -284,31 +308,19 @@ export default function DesktopWindowForm({
           </div>
           <div>
             <label htmlFor="ctaLabel" className={labelClass}>
-              CTA Label
+              Submit Button Label
             </label>
             <input
               id="ctaLabel"
               name="ctaLabel"
               defaultValue={defaults?.ctaLabel}
-              placeholder="Get in touch"
-              className={inputClass}
-            />
-          </div>
-          <div>
-            <label htmlFor="ctaHref" className={labelClass}>
-              CTA Link
-            </label>
-            <input
-              id="ctaHref"
-              name="ctaHref"
-              defaultValue={defaults?.ctaHref}
-              placeholder="/contact"
+              placeholder="Send"
               className={inputClass}
             />
           </div>
           <div className="sm:col-span-2">
             <label htmlFor="emailBody" className={labelClass}>
-              Body
+              Intro Message (shown above the form)
             </label>
             <textarea
               id="emailBody"

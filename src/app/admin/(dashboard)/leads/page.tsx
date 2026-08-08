@@ -1,16 +1,9 @@
 import { Suspense } from "react";
 import { createSessionClient } from "@/lib/supabase/server";
-import {
-  ADMIN_H1_CLASS,
-  ADMIN_INPUT_CLASS,
-  ADMIN_TABLE_CELL_CLASS,
-  ADMIN_TABLE_CLASS,
-  ADMIN_TABLE_HEAD_ROW_CLASS,
-  ADMIN_TABLE_ROW_CLASS,
-  ADMIN_TABLE_WRAPPER_CLASS,
-} from "@/lib/admin/ui";
+import { ADMIN_H1_CLASS } from "@/lib/admin/ui";
 import AdminSearchInput from "@/components/admin/AdminSearchInput";
-import { updateContactStatus } from "./actions";
+import LeadsContactsTable from "@/components/admin/tables/LeadsContactsTable";
+import LeadsSubscribersTable from "@/components/admin/tables/LeadsSubscribersTable";
 
 export const dynamic = "force-dynamic";
 
@@ -66,134 +59,25 @@ export default async function AdminLeadsPage({
           <StatusFilter current={status ?? "all"} />
         </div>
 
-        <div className={`mt-4 ${ADMIN_TABLE_WRAPPER_CLASS}`}>
-          <table className={ADMIN_TABLE_CLASS}>
-            <thead>
-              <tr className={ADMIN_TABLE_HEAD_ROW_CLASS}>
-                <th className={ADMIN_TABLE_CELL_CLASS}>Name</th>
-                <th className={ADMIN_TABLE_CELL_CLASS}>Contact</th>
-                <th className={ADMIN_TABLE_CELL_CLASS}>Received</th>
-                <th className={ADMIN_TABLE_CELL_CLASS}>Notes</th>
-                <th className={ADMIN_TABLE_CELL_CLASS}>Status</th>
-                <th className={ADMIN_TABLE_CELL_CLASS}>
-                  <span className="sr-only">Actions</span>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredContacts.map((contact) => {
-                const formId = `contact-form-${contact.id}`;
-                return (
-                  <tr key={contact.id} className={ADMIN_TABLE_ROW_CLASS}>
-                    {/* A <form> can't be a direct child of <tr> — browsers foster-parent
-                        it out of the table during HTML parsing, which desyncs the parsed
-                        DOM from what React rendered and crashes hydration. Instead, the
-                        form lives outside the table and every field references it by id. */}
-                    <td className={`${ADMIN_TABLE_CELL_CLASS} font-medium text-black`}>
-                      {contact.name}
-                    </td>
-                    <td className={`${ADMIN_TABLE_CELL_CLASS} text-black/70`}>
-                      {contact.phone}
-                      <br />
-                      {contact.email}
-                    </td>
-                    <td className={`${ADMIN_TABLE_CELL_CLASS} text-black/60`}>
-                      {new Date(contact.created_at).toLocaleDateString()}
-                    </td>
-                    <td className={ADMIN_TABLE_CELL_CLASS}>
-                      <label htmlFor={`notes-${contact.id}`} className="sr-only">
-                        Notes for {contact.name}
-                      </label>
-                      <input
-                        id={`notes-${contact.id}`}
-                        name="notes"
-                        form={formId}
-                        defaultValue={contact.notes ?? ""}
-                        placeholder="Notes"
-                        className={`${ADMIN_INPUT_CLASS} mt-0 w-40`}
-                      />
-                    </td>
-                    <td className={ADMIN_TABLE_CELL_CLASS}>
-                      <label htmlFor={`status-${contact.id}`} className="sr-only">
-                        Status for {contact.name}
-                      </label>
-                      <select
-                        id={`status-${contact.id}`}
-                        name="status"
-                        form={formId}
-                        defaultValue={contact.status}
-                        className={`${ADMIN_INPUT_CLASS} mt-0 w-32`}
-                      >
-                        <option value="new">New</option>
-                        <option value="contacted">Contacted</option>
-                        <option value="closed">Closed</option>
-                      </select>
-                    </td>
-                    <td className={ADMIN_TABLE_CELL_CLASS}>
-                      <form
-                        id={formId}
-                        action={updateContactStatus.bind(null, contact.id)}
-                        className="contents"
-                      >
-                        <button
-                          type="submit"
-                          className="rounded px-2 py-2 text-xs font-semibold text-black/70 underline hover:text-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2"
-                        >
-                          Save
-                        </button>
-                      </form>
-                    </td>
-                  </tr>
-                );
-              })}
-              {filteredContacts.length === 0 && (
-                <tr>
-                  <td colSpan={6} className={`${ADMIN_TABLE_CELL_CLASS} text-black/60`}>
-                    {query || (status && status !== "all")
-                      ? "No submissions match your filters."
-                      : "No submissions yet."}
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+        <div className="mt-4">
+          <LeadsContactsTable
+            contacts={filteredContacts}
+            emptyMessage={
+              query || (status && status !== "all")
+                ? "No submissions match your filters."
+                : "No submissions yet."
+            }
+          />
         </div>
       </div>
 
       <div>
         <h2 className={ADMIN_H1_CLASS}>Newsletter Subscribers</h2>
-        <div className={`mt-4 ${ADMIN_TABLE_WRAPPER_CLASS}`}>
-          <table className={ADMIN_TABLE_CLASS}>
-            <thead>
-              <tr className={ADMIN_TABLE_HEAD_ROW_CLASS}>
-                <th className={ADMIN_TABLE_CELL_CLASS}>Email</th>
-                <th className={ADMIN_TABLE_CELL_CLASS}>Source</th>
-                <th className={ADMIN_TABLE_CELL_CLASS}>Subscribed</th>
-              </tr>
-            </thead>
-            <tbody>
-              {(subscribers ?? []).map((sub) => (
-                <tr key={sub.id} className={ADMIN_TABLE_ROW_CLASS}>
-                  <td className={`${ADMIN_TABLE_CELL_CLASS} font-medium text-black`}>
-                    {sub.email}
-                  </td>
-                  <td className={`${ADMIN_TABLE_CELL_CLASS} text-black/70`}>
-                    {sub.source}
-                  </td>
-                  <td className={`${ADMIN_TABLE_CELL_CLASS} text-black/60`}>
-                    {new Date(sub.created_at).toLocaleDateString()}
-                  </td>
-                </tr>
-              ))}
-              {(subscribers ?? []).length === 0 && (
-                <tr>
-                  <td colSpan={3} className={`${ADMIN_TABLE_CELL_CLASS} text-black/60`}>
-                    No subscribers yet.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+        <div className="mt-4">
+          <LeadsSubscribersTable
+            subscribers={subscribers ?? []}
+            emptyMessage="No subscribers yet."
+          />
         </div>
       </div>
     </div>

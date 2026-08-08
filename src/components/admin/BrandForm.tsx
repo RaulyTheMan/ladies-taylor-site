@@ -1,6 +1,11 @@
+"use client";
+
+import { useForm } from "@tanstack/react-form";
+import { z } from "zod";
 import RepeatableTextList from "@/components/admin/RepeatableTextList";
 import RepeatableLinkList from "@/components/admin/RepeatableLinkList";
 import FileInputPreview from "@/components/admin/FileInputPreview";
+import AdminDatePicker from "@/components/admin/AdminDatePicker";
 import { INDUSTRIES, type BrandLink, type IndustryKey } from "@/lib/brands";
 import {
   ADMIN_BUTTON_CLASS,
@@ -8,6 +13,8 @@ import {
   ADMIN_TEXTAREA_CLASS as textareaClass,
   ADMIN_LABEL_CLASS as labelClass,
 } from "@/lib/admin/ui";
+
+const requiredField = z.string().trim().min(1, "Required");
 
 export type BrandFormDefaults = {
   slug: string;
@@ -30,6 +37,18 @@ export default function BrandForm({
   action: (formData: FormData) => void;
   defaults?: BrandFormDefaults;
 }) {
+  // The form still submits through the native `action` (React 19 Server
+  // Action, unchanged) — this instance only drives inline validation
+  // messages on the required fields. The `required` HTML attribute stays on
+  // each field as the actual submission gate, so nothing regresses if this
+  // validation layer is ever removed or JS is unavailable.
+  const form = useForm({
+    defaultValues: {
+      handle: defaults?.handle ?? "",
+      slug: defaults?.slug ?? "",
+    },
+  });
+
   return (
     <form action={action} className="mt-6 flex flex-col gap-5">
       <div>
@@ -45,19 +64,33 @@ export default function BrandForm({
         />
       </div>
 
-      <div>
-        <label htmlFor="handle" className={labelClass}>
-          Instagram Handle <span aria-hidden="true">*</span>
-        </label>
-        <input
-          id="handle"
-          name="handle"
-          required
-          defaultValue={defaults?.handle}
-          placeholder="pinkswindows"
-          className={inputClass}
-        />
-      </div>
+      <form.Field
+        name="handle"
+        validators={{ onChange: ({ value }) => requiredField.safeParse(value).error?.issues[0]?.message }}
+      >
+        {(field) => (
+          <div>
+            <label htmlFor={field.name} className={labelClass}>
+              Instagram Handle <span aria-hidden="true">*</span>
+            </label>
+            <input
+              id={field.name}
+              name={field.name}
+              required
+              value={field.state.value}
+              onChange={(e) => field.handleChange(e.target.value)}
+              onBlur={field.handleBlur}
+              placeholder="pinkswindows"
+              className={inputClass}
+            />
+            {field.state.meta.isTouched && field.state.meta.errors.length > 0 && (
+              <p className="mt-1 text-xs font-semibold text-red-600">
+                {field.state.meta.errors.join(", ")}
+              </p>
+            )}
+          </div>
+        )}
+      </form.Field>
 
       <div>
         <label htmlFor="bio" className={labelClass}>
@@ -86,19 +119,33 @@ export default function BrandForm({
       </fieldset>
 
       <div className="mt-2 grid grid-cols-1 gap-5 border-t border-black/10 pt-5 sm:grid-cols-2">
-        <div>
-          <label htmlFor="slug" className={labelClass}>
-            Slug <span aria-hidden="true">*</span>
-          </label>
-          <input
-            id="slug"
-            name="slug"
-            required
-            defaultValue={defaults?.slug}
-            placeholder="pinkswindows"
-            className={inputClass}
-          />
-        </div>
+        <form.Field
+          name="slug"
+          validators={{ onChange: ({ value }) => requiredField.safeParse(value).error?.issues[0]?.message }}
+        >
+          {(field) => (
+            <div>
+              <label htmlFor={field.name} className={labelClass}>
+                Slug <span aria-hidden="true">*</span>
+              </label>
+              <input
+                id={field.name}
+                name={field.name}
+                required
+                value={field.state.value}
+                onChange={(e) => field.handleChange(e.target.value)}
+                onBlur={field.handleBlur}
+                placeholder="pinkswindows"
+                className={inputClass}
+              />
+              {field.state.meta.isTouched && field.state.meta.errors.length > 0 && (
+                <p className="mt-1 text-xs font-semibold text-red-600">
+                  {field.state.meta.errors.join(", ")}
+                </p>
+              )}
+            </div>
+          )}
+        </form.Field>
         <div>
           <label htmlFor="industryKey" className={labelClass}>
             Industry
@@ -120,12 +167,11 @@ export default function BrandForm({
           <label htmlFor="publishedAt" className={labelClass}>
             Date Published (blank = TBD)
           </label>
-          <input
+          <AdminDatePicker
             id="publishedAt"
-            type="date"
             name="publishedAt"
             defaultValue={defaults?.publishedAt}
-            className={inputClass}
+            placeholder="Leave blank for TBD"
           />
         </div>
         <FileInputPreview

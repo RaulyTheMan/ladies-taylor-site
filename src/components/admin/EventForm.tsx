@@ -1,11 +1,18 @@
+"use client";
+
+import { useForm } from "@tanstack/react-form";
+import { z } from "zod";
 import RepeatableTextList from "@/components/admin/RepeatableTextList";
 import FileInputPreview from "@/components/admin/FileInputPreview";
+import AdminDatePicker from "@/components/admin/AdminDatePicker";
 import {
   ADMIN_BUTTON_CLASS,
   ADMIN_INPUT_CLASS as inputClass,
   ADMIN_TEXTAREA_CLASS as textareaClass,
   ADMIN_LABEL_CLASS as labelClass,
 } from "@/lib/admin/ui";
+
+const requiredField = z.string().trim().min(1, "Required");
 
 // Formats an EventItem.date/time/etc back into raw form field values. The
 // public-facing types only carry display strings, so the DB row (available
@@ -37,44 +44,81 @@ export default function EventForm({
   action: (formData: FormData) => void;
   defaults?: EventFormDefaults;
 }) {
+  // Native `action` submission is unchanged; this instance only drives
+  // inline validation messages. `required` stays as the real submission
+  // gate — see the matching note in BrandForm.tsx.
+  const form = useForm({
+    defaultValues: {
+      slug: defaults?.slug ?? "",
+      title: defaults?.title ?? "",
+    },
+  });
+
   return (
     <form action={action} className="mt-6 flex flex-col gap-5">
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-        <div>
-          <label htmlFor="slug" className={labelClass}>
-            Slug <span aria-hidden="true">*</span>
-          </label>
-          <input
-            id="slug"
-            name="slug"
-            required
-            defaultValue={defaults?.slug}
-            placeholder="drink-and-think"
-            className={inputClass}
-          />
-        </div>
-        <div>
-          <label htmlFor="title" className={labelClass}>
-            Title <span aria-hidden="true">*</span>
-          </label>
-          <input
-            id="title"
-            name="title"
-            required
-            defaultValue={defaults?.title}
-            className={inputClass}
-          />
-        </div>
+        <form.Field
+          name="slug"
+          validators={{ onChange: ({ value }) => requiredField.safeParse(value).error?.issues[0]?.message }}
+        >
+          {(field) => (
+            <div>
+              <label htmlFor={field.name} className={labelClass}>
+                Slug <span aria-hidden="true">*</span>
+              </label>
+              <input
+                id={field.name}
+                name={field.name}
+                required
+                value={field.state.value}
+                onChange={(e) => field.handleChange(e.target.value)}
+                onBlur={field.handleBlur}
+                placeholder="drink-and-think"
+                className={inputClass}
+              />
+              {field.state.meta.isTouched && field.state.meta.errors.length > 0 && (
+                <p className="mt-1 text-xs font-semibold text-red-600">
+                  {field.state.meta.errors.join(", ")}
+                </p>
+              )}
+            </div>
+          )}
+        </form.Field>
+        <form.Field
+          name="title"
+          validators={{ onChange: ({ value }) => requiredField.safeParse(value).error?.issues[0]?.message }}
+        >
+          {(field) => (
+            <div>
+              <label htmlFor={field.name} className={labelClass}>
+                Title <span aria-hidden="true">*</span>
+              </label>
+              <input
+                id={field.name}
+                name={field.name}
+                required
+                value={field.state.value}
+                onChange={(e) => field.handleChange(e.target.value)}
+                onBlur={field.handleBlur}
+                className={inputClass}
+              />
+              {field.state.meta.isTouched && field.state.meta.errors.length > 0 && (
+                <p className="mt-1 text-xs font-semibold text-red-600">
+                  {field.state.meta.errors.join(", ")}
+                </p>
+              )}
+            </div>
+          )}
+        </form.Field>
         <div>
           <label htmlFor="eventDate" className={labelClass}>
             Date (leave blank for TBD)
           </label>
-          <input
+          <AdminDatePicker
             id="eventDate"
-            type="date"
             name="eventDate"
             defaultValue={defaults?.eventDate}
-            className={inputClass}
+            placeholder="Leave blank for TBD"
           />
         </div>
         <div>
@@ -179,12 +223,11 @@ export default function EventForm({
           <label htmlFor="publishedAt" className={labelClass}>
             Date Published (blank = TBD)
           </label>
-          <input
+          <AdminDatePicker
             id="publishedAt"
-            type="date"
             name="publishedAt"
             defaultValue={defaults?.publishedAt}
-            className={inputClass}
+            placeholder="Leave blank for TBD"
           />
         </div>
       </div>

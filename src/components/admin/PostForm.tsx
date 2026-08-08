@@ -2,9 +2,12 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { useForm } from "@tanstack/react-form";
+import { z } from "zod";
 import { ArrowLeft, UserRound, X } from "lucide-react";
 import RichTextEditor from "@/components/admin/RichTextEditor";
 import FileInputPreview from "@/components/admin/FileInputPreview";
+import AdminDatePicker from "@/components/admin/AdminDatePicker";
 import type { TiptapDoc } from "@/lib/richtext/types";
 import { uploadInlineImage } from "@/app/admin/(dashboard)/press-media/upload-image-action";
 import {
@@ -13,6 +16,8 @@ import {
   ADMIN_INPUT_CLASS as inputClass,
   ADMIN_LABEL_CLASS as labelClass,
 } from "@/lib/admin/ui";
+
+const requiredField = z.string().trim().min(1, "Required");
 
 export type PostFormDefaults = {
   slug: string;
@@ -43,6 +48,16 @@ export default function PostForm({
   const [bylineOpen, setBylineOpen] = useState(Boolean(defaults?.authorName));
   const [authorName, setAuthorName] = useState(defaults?.authorName ?? "Rauly");
 
+  // Native `action` submission is unchanged; this instance only drives
+  // inline validation messages. `required` stays as the real submission
+  // gate — see the matching note in BrandForm.tsx.
+  const form = useForm({
+    defaultValues: {
+      title: defaults?.title ?? "",
+      slug: defaults?.slug ?? "",
+    },
+  });
+
   return (
     <form action={action} className="bg-white">
       {/* Top bar — back, live draft/published status, save. */}
@@ -67,17 +82,33 @@ export default function PostForm({
 
       {/* Compose surface */}
       <div className="mx-auto max-w-2xl bg-white pb-24 pt-10">
-        <label htmlFor="title" className="sr-only">
-          Title
-        </label>
-        <input
-          id="title"
+        <form.Field
           name="title"
-          required
-          defaultValue={defaults?.title}
-          placeholder="Title"
-          className="w-full border-none bg-transparent font-gothic text-4xl leading-tight text-black placeholder:text-black/25 focus:outline-none md:text-5xl"
-        />
+          validators={{ onChange: ({ value }) => requiredField.safeParse(value).error?.issues[0]?.message }}
+        >
+          {(field) => (
+            <>
+              <label htmlFor={field.name} className="sr-only">
+                Title
+              </label>
+              <input
+                id={field.name}
+                name={field.name}
+                required
+                value={field.state.value}
+                onChange={(e) => field.handleChange(e.target.value)}
+                onBlur={field.handleBlur}
+                placeholder="Title"
+                className="w-full border-none bg-transparent font-gothic text-4xl leading-tight text-black placeholder:text-black/25 focus:outline-none md:text-5xl"
+              />
+              {field.state.meta.isTouched && field.state.meta.errors.length > 0 && (
+                <p className="mt-1 text-xs font-semibold text-red-600">
+                  {field.state.meta.errors.join(", ")}
+                </p>
+              )}
+            </>
+          )}
+        </form.Field>
 
         <label htmlFor="excerpt" className="sr-only">
           Subtitle
@@ -148,19 +179,33 @@ export default function PostForm({
           <h2 className="text-sm font-semibold text-black">Post details</h2>
 
           <div className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2">
-            <div>
-              <label htmlFor="slug" className={labelClass}>
-                Slug <span aria-hidden="true">*</span>
-              </label>
-              <input
-                id="slug"
-                name="slug"
-                required
-                defaultValue={defaults?.slug}
-                placeholder="best-reels-of-june"
-                className={inputClass}
-              />
-            </div>
+            <form.Field
+              name="slug"
+              validators={{ onChange: ({ value }) => requiredField.safeParse(value).error?.issues[0]?.message }}
+            >
+              {(field) => (
+                <div>
+                  <label htmlFor={field.name} className={labelClass}>
+                    Slug <span aria-hidden="true">*</span>
+                  </label>
+                  <input
+                    id={field.name}
+                    name={field.name}
+                    required
+                    value={field.state.value}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    onBlur={field.handleBlur}
+                    placeholder="best-reels-of-june"
+                    className={inputClass}
+                  />
+                  {field.state.meta.isTouched && field.state.meta.errors.length > 0 && (
+                    <p className="mt-1 text-xs font-semibold text-red-600">
+                      {field.state.meta.errors.join(", ")}
+                    </p>
+                  )}
+                </div>
+              )}
+            </form.Field>
             <div>
               <label htmlFor="category" className={labelClass}>
                 Category
@@ -200,24 +245,22 @@ export default function PostForm({
               <label htmlFor="publishedAt" className={labelClass}>
                 Published Date (blank = TBD)
               </label>
-              <input
+              <AdminDatePicker
                 id="publishedAt"
-                type="date"
                 name="publishedAt"
                 defaultValue={defaults?.publishedAt}
-                className={inputClass}
+                placeholder="Leave blank for TBD"
               />
             </div>
             <div>
               <label htmlFor="contentUpdatedAt" className={labelClass}>
                 Updated Date (blank = TBD)
               </label>
-              <input
+              <AdminDatePicker
                 id="contentUpdatedAt"
-                type="date"
                 name="contentUpdatedAt"
                 defaultValue={defaults?.contentUpdatedAt}
-                className={inputClass}
+                placeholder="Leave blank for TBD"
               />
             </div>
             <div className="sm:col-span-2">

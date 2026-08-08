@@ -2,47 +2,29 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { AnimatePresence, motion } from "framer-motion";
-import { useState, type FocusEvent, type KeyboardEvent } from "react";
+import { motion } from "framer-motion";
+import * as NavigationMenu from "@radix-ui/react-navigation-menu";
+import { useState } from "react";
 import type { NavItem } from "@/lib/nav";
 
 export default function NavBar({ items }: { items: NavItem[] }) {
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-  const activeItem = hoveredIndex !== null ? items[hoveredIndex] : null;
-
-  function closeMenu() {
-    setHoveredIndex(null);
-  }
-
-  // Closes the dropdown once focus leaves the whole nav (not just the
-  // current link) — e.g. tabbing past the last dropdown link.
-  function handleNavBlur(e: FocusEvent<HTMLElement>) {
-    if (!e.currentTarget.contains(e.relatedTarget as Node | null)) {
-      closeMenu();
-    }
-  }
-
-  function handleNavKeyDown(e: KeyboardEvent<HTMLElement>) {
-    if (e.key === "Escape" && hoveredIndex !== null) {
-      closeMenu();
-      (e.currentTarget.querySelector("a") as HTMLElement | null)?.focus();
-    }
-  }
+  // Radix's NavigationMenu owns hover-intent, touch, keyboard (arrows,
+  // Escape), and outside-dismiss internally — this used to be a large block
+  // of hand-rolled state (including a touch-specific patch) that's no
+  // longer needed. This local flag exists only to drive the full-screen
+  // backdrop, which Radix has no opinion on.
+  const [hasOpenItem, setHasOpenItem] = useState(false);
 
   return (
     <>
-      <AnimatePresence>
-        {hoveredIndex !== null && (
-          <motion.div
-            aria-hidden
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.15 }}
-            className="fixed inset-0 z-[10000] bg-white/70 backdrop-blur-sm"
-          />
-        )}
-      </AnimatePresence>
+      {hasOpenItem && (
+        <div
+          aria-hidden
+          onClick={() => setHasOpenItem(false)}
+          className="fixed inset-0 z-[10000] bg-white/70 opacity-0 backdrop-blur-sm transition-opacity duration-150 data-[open=true]:opacity-100"
+          data-open={hasOpenItem}
+        />
+      )}
 
       <header className="relative z-[10001] flex items-center justify-between gap-4 px-6 py-5 md:px-10">
         <Link href="/" className="shrink-0">
@@ -56,89 +38,70 @@ export default function NavBar({ items }: { items: NavItem[] }) {
           />
         </Link>
 
-        <nav
-          onMouseLeave={closeMenu}
-          onBlur={handleNavBlur}
-          onKeyDown={handleNavKeyDown}
-          className="window-border relative hidden items-center gap-1 rounded-squircle-md bg-lt-red px-2 py-1.5 md:flex"
+        <NavigationMenu.Root
+          onValueChange={(value) => setHasOpenItem(value !== "")}
+          className="relative hidden md:block"
         >
-          {items.map((item, i) => {
-            const isOpen = hoveredIndex === i;
-            const dropdownId = `nav-dropdown-${i}`;
-
-            return (
-              <div
-                key={item.label}
-                onMouseEnter={() => setHoveredIndex(i)}
-                className="relative"
-              >
-                <Link
-                  href={item.href}
-                  onFocus={() => setHoveredIndex(i)}
-                  aria-haspopup={item.dropdown ? true : undefined}
-                  aria-expanded={item.dropdown ? isOpen : undefined}
-                  aria-controls={item.dropdown ? dropdownId : undefined}
-                  className={`flex items-center gap-1 rounded-squircle-sm px-4 py-2 text-xs font-bold uppercase tracking-wide transition-colors ${
-                    isOpen
-                      ? "text-lt-yellow underline decoration-2 underline-offset-4"
-                      : "text-white hover:bg-black/15"
-                  }`}
-                >
-                  {item.label}
-                  {item.dropdown && (
+          <NavigationMenu.List className="window-border flex items-center gap-1 rounded-squircle-md bg-lt-red px-2 py-1.5">
+            {items.map((item) =>
+              item.dropdown ? (
+                <NavigationMenu.Item key={item.label} value={item.label}>
+                  <NavigationMenu.Trigger className="group flex items-center gap-1 rounded-squircle-sm px-4 py-2 text-xs font-bold uppercase tracking-wide text-white outline-none transition-colors hover:bg-black/15 data-[state=open]:text-lt-yellow data-[state=open]:underline data-[state=open]:decoration-2 data-[state=open]:underline-offset-4">
+                    {item.label}
                     <svg
                       width="10"
                       height="10"
                       viewBox="0 0 10 6"
                       fill="none"
                       aria-hidden
-                      className={`transition-transform ${isOpen ? "rotate-180" : ""}`}
+                      className="transition-transform group-data-[state=open]:rotate-180"
                     >
-                      <path
-                        d="M1 1l4 4 4-4"
-                        stroke="currentColor"
-                        strokeWidth="1.5"
-                      />
+                      <path d="M1 1l4 4 4-4" stroke="currentColor" strokeWidth="1.5" />
                     </svg>
-                  )}
-                </Link>
-              </div>
-            );
-          })}
-
-          <AnimatePresence>
-            {activeItem?.dropdown && (
-              <motion.div
-                id={`nav-dropdown-${hoveredIndex}`}
-                initial={{ opacity: 0, y: -8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                transition={{ duration: 0.18, ease: "easeOut" }}
-                className="window-border absolute left-0 right-0 top-full mt-2 rounded-squircle-md bg-lt-red p-6"
-              >
-                <div className="grid grid-cols-[220px_1fr] gap-8">
-                  <ul className="flex flex-col gap-1">
-                    {activeItem.dropdown.map((sub, si) => (
-                      <li key={sub.label}>
-                        <Link
-                          href={sub.href}
-                          className={`block rounded-squircle-sm px-3 py-2 text-left text-xs font-semibold ${
-                            si === 0
-                              ? "bg-lt-cream text-black"
-                              : "text-white hover:bg-black/15"
-                          }`}
-                        >
-                          {sub.label}
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                  <div className="rounded-squircle-sm bg-lt-gray" />
-                </div>
-              </motion.div>
+                  </NavigationMenu.Trigger>
+                  <NavigationMenu.Content className="outline-none">
+                    <div className="grid grid-cols-[220px_1fr] gap-8 p-6">
+                      <ul className="flex flex-col gap-1">
+                        {item.dropdown.map((sub, si) => (
+                          <li key={sub.label}>
+                            <NavigationMenu.Link asChild>
+                              <Link
+                                href={sub.href}
+                                className={`block rounded-squircle-sm px-3 py-2 text-left text-xs font-semibold ${
+                                  si === 0
+                                    ? "bg-lt-cream text-black"
+                                    : "text-white hover:bg-black/15"
+                                }`}
+                              >
+                                {sub.label}
+                              </Link>
+                            </NavigationMenu.Link>
+                          </li>
+                        ))}
+                      </ul>
+                      <div className="rounded-squircle-sm bg-lt-gray" />
+                    </div>
+                  </NavigationMenu.Content>
+                </NavigationMenu.Item>
+              ) : (
+                <NavigationMenu.Item key={item.label}>
+                  <NavigationMenu.Link asChild>
+                    <Link
+                      href={item.href}
+                      className="flex items-center gap-1 rounded-squircle-sm px-4 py-2 text-xs font-bold uppercase tracking-wide text-white outline-none transition-colors hover:bg-black/15"
+                    >
+                      {item.label}
+                    </Link>
+                  </NavigationMenu.Link>
+                </NavigationMenu.Item>
+              )
             )}
-          </AnimatePresence>
-        </nav>
+          </NavigationMenu.List>
+
+          <div className="absolute left-0 right-0 top-full mt-2 flex justify-center">
+            <NavigationMenu.Viewport className="window-border h-[var(--radix-navigation-menu-viewport-height)] w-full origin-top scale-y-95 rounded-squircle-md bg-lt-red opacity-0 transition-[opacity,transform] duration-150 data-[state=open]:scale-y-100 data-[state=open]:opacity-100" />
+          </div>
+        </NavigationMenu.Root>
 
         <div className="flex shrink-0 items-center gap-4">
           <Link
