@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { motion } from "framer-motion";
 import { useRef, useState } from "react";
 import type { WorkPost } from "@/lib/work-posts";
 
@@ -29,9 +30,13 @@ export default function PostDetail({ post }: { post: WorkPost }) {
         <span className="text-sm font-bold text-black">ladies.taylor</span>
       </div>
 
-      <div
+      <motion.div
         ref={scrollRef}
         onScroll={handleScroll}
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true, margin: "-80px" }}
+        transition={{ duration: 0.35, ease: "easeOut" }}
         className="no-scrollbar flex snap-x snap-mandatory overflow-x-auto"
       >
         {post.images.map((src, i) => (
@@ -48,7 +53,7 @@ export default function PostDetail({ post }: { post: WorkPost }) {
             />
           </div>
         ))}
-      </div>
+      </motion.div>
 
       {post.images.length > 1 && (
         <div className="flex items-center justify-center gap-1.5 py-2">

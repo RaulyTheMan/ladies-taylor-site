@@ -1,9 +1,11 @@
 "use client";
 
 import Image from "next/image";
+import { AnimatePresence, motion } from "framer-motion";
 import { useState } from "react";
 import { homeNav } from "@/lib/nav";
 import { workPosts } from "@/lib/work-posts";
+import { StaggerGrid, StaggerItem } from "@/components/StaggerGrid";
 import MobileNavBar from "./MobileNavBar";
 import PostFeed from "./PostFeed";
 
@@ -79,59 +81,88 @@ export default function MobileHero() {
         </div>
       </div>
 
-      {openIndex !== null ? (
-        <div className="mt-10">
-          <PostFeed initialIndex={openIndex} onClose={() => setOpenIndex(null)} />
-        </div>
-      ) : (
-        <div className="mt-10 grid grid-cols-3 gap-1 p-1">
-          {Array.from({ length: GRID_SIZE }).map((_, i) => {
-            const special = SPECIAL_SLOTS[i];
-            if (special) {
-              return (
-                <button
-                  key={i}
-                  type="button"
-                  onClick={() => setOpenIndex(i)}
-                  className={`relative aspect-[4/5] ${special.stroke ? "border border-black" : ""}`}
-                >
-                  <Image
-                    src={special.image}
-                    alt={special.label}
-                    fill
-                    className="object-cover"
-                    sizes="33vw"
-                    unoptimized={special.unoptimized}
-                  />
-                </button>
-              );
-            }
+      {/* Deliberately not `mode="wait"` — that would gate mounting the new
+          view on the old one's exit animation finishing, so tapping into a
+          post could hang on a stalled/skipped animation (slow device,
+          reduced motion, throttled background tab) instead of switching
+          immediately. Default mode mounts the entering view right away and
+          lets the exiting one fade out independently. */}
+      <AnimatePresence>
+        {openIndex !== null ? (
+          <motion.div
+            key="feed"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="mt-10"
+          >
+            <PostFeed initialIndex={openIndex} onClose={() => setOpenIndex(null)} />
+          </motion.div>
+        ) : (
+          <motion.div
+            key="grid"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <StaggerGrid className="mt-10 grid grid-cols-3 gap-1 p-1">
+              {Array.from({ length: GRID_SIZE }).map((_, i) => {
+                const special = SPECIAL_SLOTS[i];
+                if (special) {
+                  return (
+                    <StaggerItem key={i}>
+                      <button
+                        type="button"
+                        onClick={() => setOpenIndex(i)}
+                        className={`relative aspect-[4/5] w-full ${special.stroke ? "border border-black" : ""}`}
+                      >
+                        <Image
+                          src={special.image}
+                          alt={special.label}
+                          fill
+                          className="object-cover"
+                          sizes="33vw"
+                          unoptimized={special.unoptimized}
+                        />
+                      </button>
+                    </StaggerItem>
+                  );
+                }
 
-            const post = workPosts[i - SPECIAL_SLOTS.length];
+                const post = workPosts[i - SPECIAL_SLOTS.length];
 
-            if (!post) {
-              return <div key={i} className="aspect-[4/5] bg-lt-gray" />;
-            }
+                if (!post) {
+                  return (
+                    <StaggerItem key={i}>
+                      <div className="aspect-[4/5] bg-lt-gray" />
+                    </StaggerItem>
+                  );
+                }
 
-            return (
-              <button
-                key={i}
-                type="button"
-                onClick={() => setOpenIndex(i)}
-                className="relative aspect-[4/5]"
-              >
-                <Image
-                  src={post.images[0]}
-                  alt={post.caption}
-                  fill
-                  className="object-cover"
-                  sizes="33vw"
-                />
-              </button>
-            );
-          })}
-        </div>
-      )}
+                return (
+                  <StaggerItem key={i}>
+                    <button
+                      type="button"
+                      onClick={() => setOpenIndex(i)}
+                      className="relative aspect-[4/5] w-full"
+                    >
+                      <Image
+                        src={post.images[0]}
+                        alt={post.caption}
+                        fill
+                        className="object-cover"
+                        sizes="33vw"
+                      />
+                    </button>
+                  </StaggerItem>
+                );
+              })}
+            </StaggerGrid>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </section>
   );
 }

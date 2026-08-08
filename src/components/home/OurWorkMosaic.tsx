@@ -1,3 +1,7 @@
+"use client";
+
+import { motion } from "framer-motion";
+
 // Placeholder mosaic — swap TILES for real 3:4 images / 9:16 video
 // thumbnails once assets are ready. Deliberately unstyled-as-content
 // (dashed border + icon + label) so it reads as scaffolding, not final
@@ -47,7 +51,13 @@ function PlayIcon() {
 
 export default function OurWorkMosaic() {
   return (
-    <div className="flex gap-1.5">
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-80px" }}
+      transition={{ duration: 0.4, ease: "easeOut" }}
+      className="flex gap-1.5"
+    >
       {COLUMNS.map((column, ci) => (
         <div key={ci} className="flex flex-1 flex-col gap-1.5">
           {column.map((tile, ti) => (
@@ -71,6 +81,6 @@ export default function OurWorkMosaic() {
           ))}
         </div>
       ))}
-    </div>
+    </motion.div>
   );
 }

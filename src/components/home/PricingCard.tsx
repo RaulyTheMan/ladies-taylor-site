@@ -1,8 +1,16 @@
 "use client";
 
 import Image from "next/image";
+import { AnimatePresence, motion } from "framer-motion";
 import { useLayoutEffect, useRef, useState } from "react";
 import { PRIMARY_BUTTON_CLASS } from "@/lib/ui";
+
+const STEP_TRANSITION = {
+  initial: { opacity: 0, x: 16 },
+  animate: { opacity: 1, x: 0 },
+  exit: { opacity: 0, x: -16 },
+  transition: { duration: 0.25, ease: "easeOut" as const },
+};
 
 // Pricing engine — one anchor (₹75,000 for 6 reels + 6 carousels), split by
 // percentage into four buckets, three of which become per-piece rates:
@@ -176,9 +184,14 @@ export default function PricingCard() {
         <span className="text-sm font-bold text-black">ladies.taylor</span>
       </div>
 
-      <div className={`bg-lt-cream px-6 py-16 ${PAGE_MIN_HEIGHT}`}>
+      <div className={`overflow-hidden bg-lt-cream px-6 py-16 ${PAGE_MIN_HEIGHT}`}>
+      {/* Not `mode="wait"` — gating the next step on the previous one's exit
+          animation finishing would risk stranding someone mid-flow if that
+          animation stalls or is skipped (reduced motion, a slow device).
+          Default mode mounts the next step immediately. */}
+      <AnimatePresence>
         {step === "cover" && (
-          <>
+          <motion.div key="cover" {...STEP_TRANSITION}>
             <p className="text-2xl text-black">but what about</p>
             <FitHeadline
               className="font-display leading-none text-lt-yellow"
@@ -199,11 +212,11 @@ export default function PricingCard() {
             >
               Click here
             </button>
-          </>
+          </motion.div>
         )}
 
         {step === "tool" && (
-          <div>
+          <motion.div key="tool" {...STEP_TRANSITION}>
             <p className="font-gothic text-3xl leading-none text-black">
               Build your quote
             </p>
@@ -299,11 +312,11 @@ export default function PricingCard() {
             >
               What next?
             </button>
-          </div>
+          </motion.div>
         )}
 
         {step === "terms" && (
-          <div>
+          <motion.div key="terms" {...STEP_TRANSITION}>
             <p className="font-gothic text-3xl leading-none text-black">
               Good to know
             </p>
@@ -322,8 +335,9 @@ export default function PricingCard() {
             >
               Get in touch
             </button>
-          </div>
+          </motion.div>
         )}
+      </AnimatePresence>
       </div>
     </div>
   );

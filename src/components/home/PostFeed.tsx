@@ -1,5 +1,6 @@
 "use client";
 
+import { motion } from "framer-motion";
 import { useEffect, useRef } from "react";
 import { workPosts } from "@/lib/work-posts";
 import PostDetail from "./PostDetail";
@@ -31,12 +32,17 @@ export default function PostFeed({
   ];
 
   return (
-    <div>
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3, ease: "easeOut" }}
+    >
       <div className="flex items-center gap-3 px-6 py-3">
-        <button
+        <motion.button
           type="button"
           onClick={onClose}
           aria-label="Back to grid"
+          whileTap={{ scale: 0.85 }}
           className="flex h-8 w-8 items-center justify-center"
         >
           <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5">
@@ -48,7 +54,7 @@ export default function PostFeed({
               strokeLinejoin="round"
             />
           </svg>
-        </button>
+        </motion.button>
         <span className="text-sm font-bold text-black">ladies.taylor</span>
       </div>
 
@@ -63,6 +69,6 @@ export default function PostFeed({
           {item}
         </div>
       ))}
-    </div>
+    </motion.div>
   );
 }

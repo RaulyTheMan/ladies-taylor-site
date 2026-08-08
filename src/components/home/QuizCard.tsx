@@ -1,8 +1,16 @@
 "use client";
 
 import Image from "next/image";
+import { AnimatePresence, motion } from "framer-motion";
 import { useMemo, useState } from "react";
 import { PRIMARY_BUTTON_CLASS } from "@/lib/ui";
+
+const STEP_TRANSITION = {
+  initial: { opacity: 0, x: 16 },
+  animate: { opacity: 1, x: 0 },
+  exit: { opacity: 0, x: -16 },
+  transition: { duration: 0.25, ease: "easeOut" as const },
+};
 
 // Same anchor economics as the pricing tool (₹75,000 for 6 reels + 6
 // carousels, split 50/20/20/10) — this quiz scores four quick questions
@@ -191,9 +199,14 @@ export default function QuizCard() {
         <span className="text-sm font-bold text-black">ladies.taylor</span>
       </div>
 
-      <div className={`bg-lt-purple px-6 py-16 ${PAGE_MIN_HEIGHT}`}>
+      <div className={`overflow-hidden bg-lt-purple px-6 py-16 ${PAGE_MIN_HEIGHT}`}>
+      {/* Not `mode="wait"` — gating the next question/result on the previous
+          step's exit animation finishing would risk stranding someone
+          mid-quiz if that animation stalls or is skipped (reduced motion,
+          a slow device). Default mode mounts the next step immediately. */}
+      <AnimatePresence>
         {step === "cover" && (
-          <div className="flex flex-col items-center gap-8 text-center">
+          <motion.div key="cover" {...STEP_TRANSITION} className="flex flex-col items-center gap-8 text-center">
             <div>
               <p className="text-sm font-bold uppercase tracking-wide text-white">
                 What do you need
@@ -225,11 +238,11 @@ export default function QuizCard() {
             <p className="text-sm font-semibold text-white/90">
               Find out what services you will need
             </p>
-          </div>
+          </motion.div>
         )}
 
         {step === "quiz" && (
-          <div>
+          <motion.div key={`quiz-${questionIndex}`} {...STEP_TRANSITION}>
             <p className="text-xs font-bold uppercase tracking-wide text-white/60">
               Question {questionIndex + 1} of {QUESTION_ORDER.length}
             </p>
@@ -239,21 +252,23 @@ export default function QuizCard() {
 
             <div className="mt-8 flex flex-col gap-3">
               {QUESTIONS[currentKey].map((option) => (
-                <button
+                <motion.button
                   key={option.label}
                   type="button"
                   onClick={() => selectAnswer(option)}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.97 }}
                   className="comic-border-sm rounded-squircle-md bg-lt-yellow px-5 py-3 text-left text-sm font-bold text-black"
                 >
                   {option.label}
-                </button>
+                </motion.button>
               ))}
             </div>
-          </div>
+          </motion.div>
         )}
 
         {step === "result" && recommendation && (
-          <div>
+          <motion.div key="result" {...STEP_TRANSITION}>
             <p className="text-xs font-bold uppercase tracking-wide text-white/60">
               Your recommendation
             </p>
@@ -316,8 +331,9 @@ export default function QuizCard() {
                 Retake quiz
               </button>
             </div>
-          </div>
+          </motion.div>
         )}
+      </AnimatePresence>
       </div>
     </div>
   );
