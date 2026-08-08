@@ -168,7 +168,7 @@ function CursorInner() {
                 top: arrowY,
                 left: arrowX,
                 pointerEvents: "none",
-                zIndex: 9999,
+                zIndex: 99999,
               }}
               initial={{ scale: 0, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -192,7 +192,7 @@ function CursorInner() {
                 top: followY,
                 left: followX,
                 pointerEvents: "none",
-                zIndex: 9998,
+                zIndex: 99998,
                 width: bubbleSize?.width,
                 height: bubbleSize?.height,
               }}
