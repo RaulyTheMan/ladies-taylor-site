@@ -26,6 +26,9 @@ async function listRecursive(
     sortBy: { column: "updated_at", order: "desc" },
   });
 
+  if (error) {
+    console.error(`[query] listRecursive("${prefix}"):`, error.message, error);
+  }
   if (error || !data) return [];
 
   const files: MediaFile[] = [];

@@ -1,4 +1,4 @@
-import { createPublicClient } from "@/lib/supabase/public";
+import { createPublicClient, logQueryError } from "@/lib/supabase/public";
 import type { Tables } from "@/lib/supabase/database.types";
 
 export type IndustryKey = "services" | "food-beverage" | "fashion" | "beauty";
@@ -68,6 +68,7 @@ export async function getBrands(): Promise<Brand[]> {
     .select("*")
     .order("created_at", { ascending: true });
 
+  if (error) logQueryError("getBrands", error);
   if (error || !data) return [];
   return data.map(mapBrand);
 }
@@ -80,6 +81,7 @@ export async function getBrandBySlug(slug: string): Promise<Brand | null> {
     .eq("slug", slug)
     .maybeSingle();
 
+  if (error) logQueryError("getBrandBySlug", error);
   if (error || !data) return null;
   return mapBrand(data);
 }

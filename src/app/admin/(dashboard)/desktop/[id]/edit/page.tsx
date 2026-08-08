@@ -74,7 +74,6 @@ export default async function EditDesktopWindowPage({
           dateLabel: content.dateLabel as string | undefined,
           emailBody: content.body as string | undefined,
           ctaLabel: content.ctaLabel as string | undefined,
-          ctaHref: content.ctaHref as string | undefined,
           newsfeedItems: content.items as NewsfeedItem[] | undefined,
         }}
       />

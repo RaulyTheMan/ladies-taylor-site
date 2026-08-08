@@ -1,4 +1,4 @@
-import { createPublicClient } from "@/lib/supabase/public";
+import { createPublicClient, logQueryError } from "@/lib/supabase/public";
 import type { Tables } from "@/lib/supabase/database.types";
 import type { TiptapDoc } from "@/lib/richtext/types";
 import { EMPTY_DOC } from "@/lib/richtext/types";
@@ -64,6 +64,7 @@ export async function getPosts(): Promise<BlogPost[]> {
     .order("published_at", { ascending: false, nullsFirst: false })
     .order("created_at", { ascending: true });
 
+  if (error) logQueryError("getPosts", error);
   if (error || !data) return [];
   return data.map(mapPost);
 }
@@ -76,6 +77,7 @@ export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
     .eq("slug", slug)
     .maybeSingle();
 
+  if (error) logQueryError("getPostBySlug", error);
   if (error || !data) return null;
   return mapPost(data);
 }

@@ -14,7 +14,7 @@ import {
 } from "@/lib/admin/ui";
 import ConfirmSubmitButton from "@/components/admin/ConfirmSubmitButton";
 import AdminTabs from "@/components/admin/AdminTabs";
-import type { Tables } from "@/lib/supabase/database.types";
+import { DESKTOP_WINDOW_TABS, matchesDesktopTab } from "@/lib/admin/desktopTabs";
 import {
   deleteStreamComment,
   deleteWindow,
@@ -24,15 +24,7 @@ import {
 
 export const dynamic = "force-dynamic";
 
-const TABS = [
-  { value: "all", label: "All" },
-  { value: "articles", label: "Articles" },
-  { value: "video", label: "Video" },
-  { value: "live", label: "Live" },
-  { value: "chat", label: "Chat" },
-  { value: "images", label: "Images" },
-  { value: "other", label: "Other" },
-];
+const TABS = DESKTOP_WINDOW_TABS;
 
 // "+ New Window" pre-selects the kind matching the active tab. Tabs that
 // span multiple kinds (All, Other) leave it unset — pick in the form.
@@ -43,25 +35,6 @@ const NEW_WINDOW_KIND: Record<string, string | undefined> = {
   chat: "chat",
   images: "photo",
 };
-
-function matchesTab(win: Tables<"desktop_windows">, tab: string) {
-  switch (tab) {
-    case "articles":
-      return win.kind === "article";
-    case "video":
-      return win.kind === "video" && !win.is_stream_master;
-    case "live":
-      return win.kind === "video" && win.is_stream_master;
-    case "chat":
-      return win.kind === "chat";
-    case "images":
-      return win.kind === "photo";
-    case "other":
-      return win.kind === "email" || win.kind === "document" || win.kind === "newsfeed";
-    default:
-      return true;
-  }
-}
 
 export default async function AdminDesktopPage({
   searchParams,
@@ -77,7 +50,7 @@ export default async function AdminDesktopPage({
     .select("*")
     .order("order_index", { ascending: true });
 
-  const windows = (allWindows ?? []).filter((win) => matchesTab(win, tab));
+  const windows = (allWindows ?? []).filter((win) => matchesDesktopTab(win, tab));
   const newWindowKind = NEW_WINDOW_KIND[tab];
   const newWindowHref = newWindowKind
     ? `/admin/desktop/new?kind=${newWindowKind}`
@@ -183,7 +156,7 @@ export default async function AdminDesktopPage({
                 </div>
 
                 <div className="mt-4 flex items-center gap-1 border-t border-black/5 pt-3">
-                  <form action={reorderWindow.bind(null, win.id, win.order_index, "up")}>
+                  <form action={reorderWindow.bind(null, win.id, win.order_index, "up", tab)}>
                     <button
                       type="submit"
                       disabled={i === 0}
@@ -193,7 +166,7 @@ export default async function AdminDesktopPage({
                       <ArrowUp className="h-4 w-4" />
                     </button>
                   </form>
-                  <form action={reorderWindow.bind(null, win.id, win.order_index, "down")}>
+                  <form action={reorderWindow.bind(null, win.id, win.order_index, "down", tab)}>
                     <button
                       type="submit"
                       disabled={i === windows.length - 1}

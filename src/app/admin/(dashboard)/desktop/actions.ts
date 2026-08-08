@@ -14,6 +14,7 @@ import {
 import type { Json } from "@/lib/supabase/database.types";
 import type { WindowKind } from "@/components/desktop/types";
 import { withFlash } from "@/lib/admin/flash";
+import { matchesDesktopTab } from "@/lib/admin/desktopTabs";
 
 const kindSchema = z.enum([
   "video",
@@ -63,7 +64,6 @@ function buildContent(kind: WindowKind, formData: FormData): Json {
         dateLabel: String(formData.get("dateLabel") ?? "") || undefined,
         body: String(formData.get("emailBody") ?? "") || undefined,
         ctaLabel: String(formData.get("ctaLabel") ?? "") || undefined,
-        ctaHref: String(formData.get("ctaHref") ?? "") || undefined,
       } as Json;
     case "document":
       return {
@@ -228,26 +228,28 @@ export async function toggleWindowLive(id: string, isLive: boolean) {
 export async function reorderWindow(
   id: string,
   currentOrder: number,
-  direction: "up" | "down"
+  direction: "up" | "down",
+  tab: string
 ) {
   await verifySession();
   const supabase = await createSessionClient();
 
-  const query = supabase.from("desktop_windows").select("id, order_index");
-  const { data: neighbor } =
-    direction === "up"
-      ? await query
-          .lt("order_index", currentOrder)
-          .order("order_index", { ascending: false })
-          .limit(1)
-          .maybeSingle()
-      : await query
-          .gt("order_index", currentOrder)
-          .order("order_index", { ascending: true })
-          .limit(1)
-          .maybeSingle();
+  // The admin list is filtered per-tab, so the "up"/"down" arrows' enabled
+  // state reflects only what's visible on that tab. The neighbor to swap
+  // with has to be filtered the same way — otherwise it can silently swap
+  // order against a window of a different kind that isn't even shown on the
+  // current tab, and the visible list won't appear to reorder as expected.
+  const { data: allWindows } = await supabase
+    .from("desktop_windows")
+    .select("*")
+    .order("order_index", { ascending: true });
 
-  if (!neighbor) return;
+  const visible = (allWindows ?? []).filter((win) => matchesDesktopTab(win, tab));
+  const index = visible.findIndex((win) => win.id === id);
+  const neighbor =
+    direction === "up" ? visible[index - 1] : visible[index + 1];
+
+  if (index === -1 || !neighbor) return;
 
   await supabase
     .from("desktop_windows")

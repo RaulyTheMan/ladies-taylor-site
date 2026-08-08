@@ -1,4 +1,4 @@
-import { createPublicClient } from "@/lib/supabase/public";
+import { createPublicClient, logQueryError } from "@/lib/supabase/public";
 import type { Tables } from "@/lib/supabase/database.types";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/supabase/database.types";
@@ -81,6 +81,7 @@ export async function getEvents(): Promise<EventItem[]> {
     .order("event_date", { ascending: true, nullsFirst: false })
     .order("created_at", { ascending: true });
 
+  if (error) logQueryError("getEvents", error);
   if (error || !data) return [];
   return Promise.all(data.map((row) => mapEvent(supabase, row)));
 }
@@ -93,6 +94,7 @@ export async function getEventBySlug(slug: string): Promise<EventItem | null> {
     .eq("slug", slug)
     .maybeSingle();
 
+  if (error) logQueryError("getEventBySlug", error);
   if (error || !data) return null;
   return mapEvent(supabase, data);
 }
