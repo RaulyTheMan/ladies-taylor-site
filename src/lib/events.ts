@@ -32,26 +32,39 @@ function formatEventDate(dateStr: string) {
   return `${day} ${month}, ${weekday}`;
 }
 
-async function countRegistrations(
+async function countRegistrationsBatch(
   supabase: SupabaseClient<Database>,
-  eventId: string
+  eventIds: string[]
 ) {
-  // event_registrations has no anon SELECT policy (protects registrant PII),
-  // so counts come from a SECURITY DEFINER RPC that only ever returns
-  // aggregates, never individual rows.
-  const { data } = await supabase.rpc("get_event_registration_counts", {
-    p_event_id: eventId,
+  // Fetch all registration counts in parallel instead of sequentially
+  const results = await Promise.all(
+    eventIds.map(async (eventId) => {
+      const { data } = await supabase.rpc("get_event_registration_counts", {
+        p_event_id: eventId,
+      });
+      const row = data?.[0];
+      return {
+        eventId,
+        counts: {
+          registered: row?.registered_count ?? 0,
+          waiting: row?.waiting_count ?? 0,
+        },
+      };
+    })
+  );
+
+  const counts: Record<string, { registered: number; waiting: number }> = {};
+  results.forEach(({ eventId, counts: eventCounts }) => {
+    counts[eventId] = eventCounts;
   });
-  const row = data?.[0];
-  return { registered: row?.registered_count ?? 0, waiting: row?.waiting_count ?? 0 };
+  return counts;
 }
 
-async function mapEvent(
-  supabase: SupabaseClient<Database>,
-  row: Tables<"events">
-): Promise<EventItem> {
-  const { registered: registeredCount, waiting: waitingCount } =
-    await countRegistrations(supabase, row.id);
+function mapEvent(
+  row: Tables<"events">,
+  counts: Record<string, { registered: number; waiting: number }>
+): EventItem {
+  const { registered: registeredCount, waiting: waitingCount } = counts[row.id] || { registered: 0, waiting: 0 };
 
   return {
     slug: row.slug,
@@ -83,7 +96,12 @@ export async function getEvents(): Promise<EventItem[]> {
 
   if (error) logQueryError("getEvents", error);
   if (error || !data) return [];
-  return Promise.all(data.map((row) => mapEvent(supabase, row)));
+
+  // Batch fetch all registration counts in one RPC call instead of one per event
+  const eventIds = data.map((row) => row.id);
+  const counts = await countRegistrationsBatch(supabase, eventIds);
+
+  return data.map((row) => mapEvent(row, counts));
 }
 
 export async function getEventBySlug(slug: string): Promise<EventItem | null> {
@@ -96,5 +114,7 @@ export async function getEventBySlug(slug: string): Promise<EventItem | null> {
 
   if (error) logQueryError("getEventBySlug", error);
   if (error || !data) return null;
-  return mapEvent(supabase, data);
+
+  const counts = await countRegistrationsBatch(supabase, [data.id]);
+  return mapEvent(data, counts);
 }
