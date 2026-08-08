@@ -7,7 +7,19 @@ import { PRIMARY_BUTTON_CLASS } from "@/lib/ui";
 const FIELD_CLASS =
   "border-b border-black/30 bg-transparent pb-1.5 text-xs text-black placeholder:text-black/50 focus:border-black focus:outline-none";
 
-export function EmailContent() {
+export function EmailContent({
+  from,
+  subject,
+  dateLabel,
+  introBody,
+  ctaLabel,
+}: {
+  from?: string;
+  subject?: string;
+  dateLabel?: string;
+  introBody?: string;
+  ctaLabel?: string;
+}) {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
@@ -19,18 +31,31 @@ export function EmailContent() {
 
   return (
     <div className="flex h-full flex-col overflow-y-auto overscroll-contain bg-lt-cream">
-      <div className="flex shrink-0 items-center gap-2 border-b border-black/10 px-4 py-2.5">
-        <div className="flex h-6 w-6 items-center justify-center rounded-full border border-black/10 bg-white">
-          <Image
-            src="/images/logo/logo-mark.png"
-            alt="Ladies Taylor"
-            width={253}
-            height={72}
-            className="h-2.5 w-auto"
-          />
+      <div className="flex shrink-0 items-center justify-between gap-2 border-b border-black/10 px-4 py-2.5">
+        <div className="flex min-w-0 items-center gap-2">
+          <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-black/10 bg-white">
+            <Image
+              src="/images/logo/logo-mark.png"
+              alt="Ladies Taylor"
+              width={253}
+              height={72}
+              className="h-2.5 w-auto"
+            />
+          </div>
+          <span className="truncate text-xs font-bold text-black">
+            {from || "ladies.taylor"}
+          </span>
         </div>
-        <span className="text-xs font-bold text-black">ladies.taylor</span>
+        {dateLabel && (
+          <span className="shrink-0 text-micro text-black/50">{dateLabel}</span>
+        )}
       </div>
+
+      {subject && (
+        <p className="shrink-0 px-4 pt-3 text-sm font-bold text-black">
+          {subject}
+        </p>
+      )}
 
       <div className="flex-1 px-4 py-4">
         {submitted ? (
@@ -40,6 +65,7 @@ export function EmailContent() {
         ) : (
           <form
             className="flex flex-col gap-4"
+            aria-describedby={introBody ? `${idPrefix}-intro` : undefined}
             onSubmit={async (e) => {
               e.preventDefault();
               setSubmitting(true);
@@ -63,6 +89,14 @@ export function EmailContent() {
               }
             }}
           >
+            {introBody && (
+              <p
+                id={`${idPrefix}-intro`}
+                className="text-xs leading-relaxed text-black/70"
+              >
+                {introBody}
+              </p>
+            )}
             <div>
               <label htmlFor={`${idPrefix}-name`} className="sr-only">
                 Name
@@ -129,7 +163,7 @@ export function EmailContent() {
               disabled={submitting}
               className={`${PRIMARY_BUTTON_CLASS} self-start disabled:opacity-60`}
             >
-              {submitting ? "Sending..." : "Send"}
+              {submitting ? "Sending..." : ctaLabel || "Send"}
             </button>
           </form>
         )}

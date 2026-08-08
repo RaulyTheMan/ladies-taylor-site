@@ -1,8 +1,40 @@
 "use client";
 
-import { useLayoutEffect, useRef, useState } from "react";
-import { motion } from "framer-motion";
+import { createContext, useEffect, useLayoutEffect, useRef, useState } from "react";
+import {
+  motion,
+  useMotionValue,
+  useReducedMotion,
+  useSpring,
+} from "framer-motion";
 import type { WindowKind } from "./types";
+
+// Caps how far a window leans toward the cursor — kept small on purpose
+// ("very slight," not a gimmick). Only ever active for a real hovering
+// mouse (gated below) since it reads as a pointer-following effect, not
+// something a touch tap could meaningfully trigger.
+const MAX_TILT_DEG = 1.5;
+
+function useFineHoverPointer() {
+  const [supported, setSupported] = useState(false);
+  useEffect(() => {
+    const mql = window.matchMedia("(hover: hover) and (pointer: fine)");
+    // matchMedia doesn't exist during SSR, so this can only be read after
+    // mount — state starts false (matching the server render) and is
+    // corrected here.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setSupported(mql.matches);
+    const onChange = (e: MediaQueryListEvent) => setSupported(e.matches);
+    mql.addEventListener("change", onChange);
+    return () => mql.removeEventListener("change", onChange);
+  }, []);
+  return supported;
+}
+
+// Lets window-content components (e.g. FloatingEmoji's animation loop) pause
+// background work while their window is minimized, without desktop.tsx's
+// server-built content needing to know about client-side window state.
+export const MinimizedContext = createContext(false);
 
 const KIND_HEADER: Record<WindowKind, { bg: string; text: string }> = {
   video: { bg: "bg-lt-purple", text: "text-white" },
@@ -35,23 +67,35 @@ function measureDockOffset(
   height: number
 ): DockOffset | null {
   const boundsEl = boundsRef.current;
+  if (!boundsEl) return null;
+
+  const boundsRect = boundsEl.getBoundingClientRect();
+  const windowCenterX = boundsRect.left + x + width / 2;
+  const windowCenterY = boundsRect.top + y + height / 2;
+
   const dockEl = document.querySelector<HTMLElement>(
     `[data-dock-icon="${dockIconId}"]`
   );
-  if (!boundsEl || !dockEl) return null;
 
-  const boundsRect = boundsEl.getBoundingClientRect();
-  const dockRect = dockEl.getBoundingClientRect();
+  // No dock icon represents this window's kind (dock apps are configured
+  // independently of windows in the CMS, so this isn't guaranteed) — fall
+  // back to shrinking toward the bottom-center of the desktop scene instead
+  // of leaving minimize with nowhere to animate to. Without this, the window
+  // would stay fully visible and opaque (only its pointer-events get turned
+  // off), looking open but with every button silently dead.
+  const targetRect = dockEl?.getBoundingClientRect() ?? {
+    left: boundsRect.left + boundsRect.width / 2 - 20,
+    top: boundsRect.bottom - 4,
+    width: 40,
+  };
 
-  const windowCenterX = boundsRect.left + x + width / 2;
-  const windowCenterY = boundsRect.top + y + height / 2;
-  const dockCenterX = dockRect.left + dockRect.width / 2;
-  const dockCenterY = dockRect.top + dockRect.height / 2;
+  const targetCenterX = targetRect.left + targetRect.width / 2;
+  const targetCenterY = targetRect.top;
 
   return {
-    dx: dockCenterX - windowCenterX,
-    dy: dockCenterY - windowCenterY,
-    scale: Math.max(dockRect.width / width, 0.05),
+    dx: targetCenterX - windowCenterX,
+    dy: targetCenterY - windowCenterY,
+    scale: Math.max(targetRect.width / width, 0.05),
   };
 }
 
@@ -146,6 +190,37 @@ export default function Window({
   const [minimizeOffset, setMinimizeOffset] = useState<DockOffset | null>(
     null
   );
+
+  const reduceMotion = useReducedMotion();
+  const canTilt = useFineHoverPointer() && !reduceMotion;
+  const rawTiltX = useMotionValue(0);
+  const rawTiltY = useMotionValue(0);
+  const tiltX = useSpring(rawTiltX, { stiffness: 300, damping: 30 });
+  const tiltY = useSpring(rawTiltY, { stiffness: 300, damping: 30 });
+
+  const handleBodyPointerMove = (e: React.PointerEvent) => {
+    // Don't lean the window while it's actively being dragged or resized —
+    // the tilt is a hover flourish, not something that should fight a
+    // pointer that's mid-manipulation.
+    if (!canTilt || dragState.current || resizeState.current) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const px = (e.clientX - rect.left) / rect.width - 0.5;
+    const py = (e.clientY - rect.top) / rect.height - 0.5;
+    rawTiltY.set(px * 2 * MAX_TILT_DEG);
+    rawTiltX.set(-py * 2 * MAX_TILT_DEG);
+  };
+
+  const handleBodyPointerLeave = () => {
+    rawTiltX.set(0);
+    rawTiltY.set(0);
+  };
+
+  useEffect(() => {
+    if (minimized) {
+      rawTiltX.set(0);
+      rawTiltY.set(0);
+    }
+  }, [minimized, rawTiltX, rawTiltY]);
 
   useLayoutEffect(() => {
     if (!minimized) return;
@@ -256,6 +331,9 @@ export default function Window({
         height,
         zIndex,
         pointerEvents: minimized ? "none" : "auto",
+        rotateX: tiltX,
+        rotateY: tiltY,
+        transformPerspective: 800,
       }}
       initial={false}
       animate={animateState}
@@ -327,7 +405,15 @@ export default function Window({
             {title}
           </span>
         </div>
-        <div className="min-h-0 flex-1">{children}</div>
+        <div
+          onPointerMove={handleBodyPointerMove}
+          onPointerLeave={handleBodyPointerLeave}
+          className="min-h-0 flex-1"
+        >
+          <MinimizedContext.Provider value={minimized}>
+            {children}
+          </MinimizedContext.Provider>
+        </div>
       </div>
 
       <div

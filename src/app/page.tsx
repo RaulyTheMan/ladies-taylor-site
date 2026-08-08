@@ -1,6 +1,6 @@
 import NavBar from "@/components/NavBar";
 import Footer from "@/components/Footer";
-import DesktopHero from "@/components/desktop/DesktopHero";
+import DesktopHeroGate from "@/components/desktop/DesktopHeroGate";
 import MobileHero from "@/components/home/MobileHero";
 import ServiceBand from "@/components/home/ServiceBand";
 import OurWork from "@/components/home/OurWork";
@@ -30,7 +30,7 @@ export default async function Home() {
             Ladies Taylor — Branding, Packaging &amp; Social Media Management
           </h1>
           <NavBar items={homeNav} />
-          <DesktopHero windowDefs={windowDefs} dockApps={dockApps} />
+          <DesktopHeroGate windowDefs={windowDefs} dockApps={dockApps} />
         </div>
         <ServiceBand />
         <OurWork />

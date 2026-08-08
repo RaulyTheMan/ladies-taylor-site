@@ -1,16 +1,14 @@
 import Image from "next/image";
-import { createPublicClient } from "@/lib/supabase/public";
+import { createPublicClient, logQueryError } from "@/lib/supabase/public";
 import type { Tables } from "@/lib/supabase/database.types";
-import { VideoContent } from "@/components/desktop/window-content/VideoContent";
-import { ArticleContent } from "@/components/desktop/window-content/ArticleContent";
-import { PhotoContent } from "@/components/desktop/window-content/PhotoContent";
-import { EmailContent } from "@/components/desktop/window-content/EmailContent";
-import { DocumentContent } from "@/components/desktop/window-content/DocumentContent";
-import { NewsfeedContent } from "@/components/desktop/window-content/NewsfeedContent";
 import type { NewsfeedItem } from "@/components/desktop/window-content/NewsfeedContent";
-import { ChatContent } from "@/components/desktop/window-content/ChatContent";
 import type { StreamComment } from "@/components/desktop/window-content/types";
-import type { DockApp, WindowDef, WindowKind } from "@/components/desktop/types";
+import type {
+  DockApp,
+  WindowContentData,
+  WindowDef,
+  WindowKind,
+} from "@/components/desktop/types";
 import type { TiptapDoc } from "@/lib/richtext/types";
 
 const KIND_DEFAULTS: Record<
@@ -89,57 +87,59 @@ function computePopupVideoSize(
 function buildContent(
   row: Tables<"desktop_windows">,
   initialComments: StreamComment[]
-) {
+): WindowContentData {
   const content = (row.content ?? {}) as Record<string, unknown>;
 
   switch (row.kind) {
     case "video":
-      return (
-        <VideoContent
-          timestamp={content.timestamp as string | undefined}
-          caption={content.caption as string | undefined}
-          posterUrl={row.media_url ?? undefined}
-          videoUrl={row.video_url ?? undefined}
-          allowUnmute={!row.is_ambient_muted}
-          broadcastTimeUpdates={row.is_stream_master}
-          loop={!row.is_stream_master}
-        />
-      );
+      return {
+        kind: "video",
+        timestamp: content.timestamp as string | undefined,
+        caption: content.caption as string | undefined,
+        posterUrl: row.media_url ?? undefined,
+        videoUrl: row.video_url ?? undefined,
+        allowUnmute: !row.is_ambient_muted,
+        broadcastTimeUpdates: row.is_stream_master,
+        loop: !row.is_stream_master,
+      };
     case "article":
-      return (
-        <ArticleContent
-          headline={(content.headline as string) ?? row.title}
-          body={content.body as TiptapDoc | undefined}
-          paragraphs={content.paragraphs as string[] | undefined}
-          withVideo={content.withVideo as boolean | undefined}
-          imageUrl={row.media_url ?? undefined}
-        />
-      );
+      return {
+        kind: "article",
+        headline: (content.headline as string) ?? row.title,
+        body: content.body as TiptapDoc | undefined,
+        paragraphs: content.paragraphs as string[] | undefined,
+        withVideo: content.withVideo as boolean | undefined,
+        imageUrl: row.media_url ?? undefined,
+      };
     case "photo":
-      return (
-        <PhotoContent
-          caption={content.caption as string | undefined}
-          imageUrl={row.media_url ?? undefined}
-        />
-      );
+      return {
+        kind: "photo",
+        caption: content.caption as string | undefined,
+        imageUrl: row.media_url ?? undefined,
+      };
     case "email":
-      return <EmailContent />;
+      return {
+        kind: "email",
+        from: content.from as string | undefined,
+        subject: content.subject as string | undefined,
+        dateLabel: content.dateLabel as string | undefined,
+        introBody: content.body as string | undefined,
+        ctaLabel: content.ctaLabel as string | undefined,
+      };
     case "document":
-      return (
-        <DocumentContent
-          headline={(content.headline as string) ?? row.title}
-          body={content.body as TiptapDoc | undefined}
-          paragraphs={content.paragraphs as string[] | undefined}
-        />
-      );
+      return {
+        kind: "document",
+        headline: (content.headline as string) ?? row.title,
+        body: content.body as TiptapDoc | undefined,
+        paragraphs: content.paragraphs as string[] | undefined,
+      };
     case "newsfeed":
-      return (
-        <NewsfeedContent items={(content.items as NewsfeedItem[]) ?? []} />
-      );
+      return {
+        kind: "newsfeed",
+        items: (content.items as NewsfeedItem[]) ?? [],
+      };
     case "chat":
-      return <ChatContent initialComments={initialComments} />;
-    default:
-      return null;
+      return { kind: "chat", initialComments };
   }
 }
 
@@ -167,6 +167,7 @@ export async function getDesktopWindows(): Promise<WindowDef[]> {
     getInitialStreamComments(supabase),
   ]);
 
+  if (error) logQueryError("getDesktopWindows", error);
   if (error || !data) return [];
 
   return data.map((row, i) => {
@@ -229,6 +230,7 @@ export async function getDesktopDockApps(): Promise<DockApp[]> {
     .eq("is_live", true)
     .order("order_index", { ascending: true });
 
+  if (error) logQueryError("getDesktopDockApps", error);
   if (error || !data) return [];
 
   return data.map((row) => ({

@@ -1,16 +1,19 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { MinimizedContext } from "../Window";
 
 const EMOJIS = ["😂", "🔥", "👏"];
 
 export function FloatingEmoji() {
+  const minimized = useContext(MinimizedContext);
   const [items, setItems] = useState<
     { id: number; emoji: string; left: number }[]
   >([]);
 
   useEffect(() => {
+    if (minimized) return;
     let nextId = 0;
     const interval = setInterval(() => {
       const id = nextId++;
@@ -28,7 +31,7 @@ export function FloatingEmoji() {
       );
     }, 2200);
     return () => clearInterval(interval);
-  }, []);
+  }, [minimized]);
 
   return (
     <div

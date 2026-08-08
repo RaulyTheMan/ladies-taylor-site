@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import Window from "./Window";
 import Dock from "./Dock";
 import DesktopFolder from "./DesktopFolder";
+import { WindowContent } from "./WindowContent";
 import { STREAM_TIME_UPDATE_EVENT } from "./window-content/VideoContent";
 import type { DockApp, WindowDef, WindowKind, WindowState } from "./types";
 
@@ -32,6 +33,27 @@ function readOpenedIds(): Set<string> {
 function writeOpenedIds(ids: Set<string>) {
   if (typeof window === "undefined") return;
   window.localStorage.setItem(OPENED_STORAGE_KEY, JSON.stringify([...ids]));
+}
+
+// The video+chat "stream" layout (see lib/desktop.tsx) is pinned at fixed
+// pixel positions sized for a wide desktop viewport. Anything narrower —
+// most tablets, plenty of laptops — would otherwise render those windows
+// partially or fully past the edge of this section's `overflow-hidden`
+// bounds, with no scrollbar and no way to drag/resize them back into view
+// (the resize handle itself would be off-screen). This clamps every open,
+// non-maximized window's rect into whatever the bounds actually measure at
+// right now, so it always opens fully reachable regardless of viewport size.
+function clampRect(
+  rect: { x: number; y: number; width: number; height: number },
+  minWidth: number,
+  minHeight: number,
+  bounds: { width: number; height: number }
+) {
+  const width = Math.max(minWidth, Math.min(rect.width, bounds.width));
+  const height = Math.max(minHeight, Math.min(rect.height, bounds.height));
+  const x = Math.min(Math.max(rect.x, 0), Math.max(bounds.width - width, 0));
+  const y = Math.min(Math.max(rect.y, 0), Math.max(bounds.height - height, 0));
+  return { x, y, width, height };
 }
 
 function buildInitialState(
@@ -68,6 +90,40 @@ export default function DesktopHero({
   const restoreRects = useRef<
     Record<string, { x: number; y: number; width: number; height: number }>
   >({});
+
+  const clampOpenWindows = () => {
+    const bounds = boundsRef.current?.getBoundingClientRect();
+    if (!bounds || bounds.width === 0) return;
+    setWindows((prev) => {
+      let changed = false;
+      const next = { ...prev };
+      windowDefs.forEach((def) => {
+        const w = next[def.id];
+        if (!w || !w.open || w.isMaximized) return;
+        const clamped = clampRect(w, def.minWidth, def.minHeight, bounds);
+        if (
+          clamped.x !== w.x ||
+          clamped.y !== w.y ||
+          clamped.width !== w.width ||
+          clamped.height !== w.height
+        ) {
+          changed = true;
+          next[def.id] = { ...w, ...clamped };
+        }
+      });
+      return changed ? next : prev;
+    });
+  };
+
+  // Fixes up any already-open windows (default-open ones) the moment bounds
+  // are first measurable, and again whenever the viewport itself resizes or
+  // rotates (e.g. a tablet flipping orientation after a window is open).
+  useLayoutEffect(() => {
+    clampOpenWindows();
+    window.addEventListener("resize", clampOpenWindows);
+    return () => window.removeEventListener("resize", clampOpenWindows);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [windowDefs]);
 
   // Which windows this visitor has ever opened, persisted per-device so the
   // "unopened" badge only ever shows genuinely new content.
@@ -163,6 +219,7 @@ export default function DesktopHero({
         },
       };
     });
+    clampOpenWindows();
   };
 
   const close = (id: string) => {
@@ -193,6 +250,7 @@ export default function DesktopHero({
       [id]: { ...prev[id], open: true, minimized: false, zIndex: z },
     }));
     markOpened([id]);
+    clampOpenWindows();
   };
 
   // Listens for the main stream video's playback time (broadcast by
@@ -244,6 +302,7 @@ export default function DesktopHero({
         return next;
       });
       markOpened(group.map((def) => def.id));
+      clampOpenWindows();
       return;
     }
 
@@ -308,7 +367,7 @@ export default function DesktopHero({
             onMaximize={() => toggleMaximize(def.id)}
             boundsRef={boundsRef}
           >
-            {def.content}
+            <WindowContent data={def.content} />
           </Window>
         );
       })}
