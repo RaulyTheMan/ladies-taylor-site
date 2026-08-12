@@ -27,6 +27,22 @@ export async function sendContactNotification(data: {
   });
 }
 
+export async function sendWhatsappLeadNotification(data: {
+  name: string;
+  phone: string;
+  preferredTime: string;
+}) {
+  const resend = getResend();
+  if (!resend || !notificationEmail) return;
+
+  await resend.emails.send({
+    from: "Ladies Taylor <onboarding@resend.dev>",
+    to: notificationEmail,
+    subject: `WhatsApp lead confirmed: ${data.name || data.phone}`,
+    text: `A lead confirmed interest over WhatsApp.\n\nName: ${data.name}\nPhone: ${data.phone}\nPreferred callback time: ${data.preferredTime}`,
+  });
+}
+
 export async function sendNewsletterNotification(data: {
   email: string;
   source: string;

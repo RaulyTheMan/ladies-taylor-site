@@ -408,6 +408,50 @@ export type Database = {
         }
         Relationships: []
       }
+      whatsapp_leads: {
+        Row: {
+          contact_submission_id: string | null
+          created_at: string
+          id: string
+          interested: boolean | null
+          phone: string
+          preferred_time: string | null
+          updated_at: string
+          wa_id: string | null
+          wa_name: string | null
+        }
+        Insert: {
+          contact_submission_id?: string | null
+          created_at?: string
+          id?: string
+          interested?: boolean | null
+          phone: string
+          preferred_time?: string | null
+          updated_at?: string
+          wa_id?: string | null
+          wa_name?: string | null
+        }
+        Update: {
+          contact_submission_id?: string | null
+          created_at?: string
+          id?: string
+          interested?: boolean | null
+          phone?: string
+          preferred_time?: string | null
+          updated_at?: string
+          wa_id?: string | null
+          wa_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "whatsapp_leads_contact_submission_id_fkey"
+            columns: ["contact_submission_id"]
+            isOneToOne: false
+            referencedRelation: "contact_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
