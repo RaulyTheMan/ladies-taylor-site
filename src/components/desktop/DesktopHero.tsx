@@ -86,6 +86,34 @@ export default function DesktopHero({
     buildInitialState(windowDefs)
   );
   const zCounter = useRef(20);
+
+  // windowDefs load asynchronously (see DesktopHeroGate) and can arrive
+  // after this component has already mounted with an empty array, so the
+  // lazy useState initializer above never sees them. Backfill any def that
+  // doesn't have state yet without touching windows already in progress
+  // (moved, resized, opened/closed by the visitor).
+  useEffect(() => {
+    setWindows((prev) => {
+      let changed = false;
+      const next = { ...prev };
+      windowDefs.forEach((def, i) => {
+        if (next[def.id]) return;
+        changed = true;
+        next[def.id] = {
+          x: def.defaultX,
+          y: def.defaultY,
+          width: def.defaultWidth,
+          height: def.defaultHeight,
+          zIndex: 10 + i,
+          open: def.defaultOpen,
+          minimized: false,
+          isMaximized: false,
+        };
+      });
+      return changed ? next : prev;
+    });
+  }, [windowDefs]);
+
   const boundsRef = useRef<HTMLDivElement>(null);
   const restoreRects = useRef<
     Record<string, { x: number; y: number; width: number; height: number }>
@@ -344,7 +372,7 @@ export default function DesktopHero({
 
       {windowDefs.map((def) => {
         const state = windows[def.id];
-        if (!state.open) return null;
+        if (!state?.open) return null;
         return (
           <Window
             key={def.id}
