@@ -3,8 +3,8 @@ import crypto from "node:crypto";
 import { createServiceClient } from "@/lib/supabase/service";
 import { sendWhatsappLeadNotification } from "@/lib/email";
 import {
-  SERVICE_NO_ID,
-  SERVICE_YES_ID,
+  isServiceNoReply,
+  isServiceYesReply,
   sendText,
   sendTimeSlotList,
   timeSlotFromRowId,
@@ -90,7 +90,7 @@ export async function POST(request: Request) {
       const replyId = replyIdFromMessage(message);
       if (!replyId) continue;
 
-      if (replyId === SERVICE_NO_ID) {
+      if (isServiceNoReply(replyId)) {
         await supabase
           .from("whatsapp_leads")
           .update({
@@ -105,7 +105,7 @@ export async function POST(request: Request) {
         continue;
       }
 
-      if (replyId === SERVICE_YES_ID) {
+      if (isServiceYesReply(replyId)) {
         await supabase
           .from("whatsapp_leads")
           .update({

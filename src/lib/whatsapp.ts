@@ -4,9 +4,20 @@ const GRAPH_VERSION = "v21.0";
 
 // Buttons/rows carry these as their developer-defined id/payload so the
 // webhook can branch on the reply without needing any stored conversation
-// state — the id alone says which step a lead answered.
+// state — the id alone says which step a lead answered. The no-code
+// template builder doesn't expose a custom payload field per quick-reply
+// button, so Meta likely defaults the payload to the button's display text
+// ("Yes"/"No") rather than these constants — match both until confirmed.
 export const SERVICE_YES_ID = "SERVICE_YES";
 export const SERVICE_NO_ID = "SERVICE_NO";
+
+export function isServiceYesReply(replyId: string): boolean {
+  return replyId === SERVICE_YES_ID || replyId.trim().toLowerCase() === "yes";
+}
+
+export function isServiceNoReply(replyId: string): boolean {
+  return replyId === SERVICE_NO_ID || replyId.trim().toLowerCase() === "no";
+}
 export const TIME_SLOT_IDS = {
   morning: "TIME_MORNING",
   afternoon: "TIME_AFTERNOON",
