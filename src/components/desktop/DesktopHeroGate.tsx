@@ -34,12 +34,17 @@ export default function DesktopHeroGate() {
   useEffect(() => {
     if (!isDesktop) return;
     // Only fetch desktop data when actually needed (desktop viewport)
-    Promise.all([getDesktopWindows(), getDesktopDockApps()]).then(
-      ([windows, apps]) => {
+    Promise.all([getDesktopWindows(), getDesktopDockApps()])
+      .then(([windows, apps]) => {
         setWindowDefs(windows);
         setDockApps(apps);
-      }
-    );
+      })
+      .catch((err) => {
+        // A network blip here shouldn't take down the whole homepage —
+        // leave the scene empty rather than letting an unhandled rejection
+        // trip the route's error boundary.
+        console.error("[desktop] failed to load desktop windows/dock apps", err);
+      });
   }, [isDesktop]);
 
   if (!isDesktop) return null;
