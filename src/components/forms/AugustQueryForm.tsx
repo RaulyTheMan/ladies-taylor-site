@@ -5,6 +5,7 @@ import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { useMemo, useState } from "react";
 import { PRIMARY_BUTTON_CLASS } from "@/lib/ui";
+import { trackMetaPixelEvent } from "@/lib/metaPixel";
 
 const CITIES = [
   "Bangalore",
@@ -130,6 +131,7 @@ export default function AugustQueryForm() {
         body: JSON.stringify(data),
       });
       if (res.ok) {
+        trackMetaPixelEvent("Lead", { content_name: "August Query Form" });
         setSubmitted(true);
       } else {
         setError(true);
