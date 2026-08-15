@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      august_query_submissions: {
+        Row: {
+          brand_category: string
+          brand_name: string
+          budget: string
+          city: string
+          created_at: string
+          email: string
+          id: string
+          name: string
+          phone: string
+          services: string[]
+          status: string
+        }
+        Insert: {
+          brand_category: string
+          brand_name: string
+          budget: string
+          city: string
+          created_at?: string
+          email: string
+          id?: string
+          name: string
+          phone: string
+          services?: string[]
+          status?: string
+        }
+        Update: {
+          brand_category?: string
+          brand_name?: string
+          budget?: string
+          city?: string
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          phone?: string
+          services?: string[]
+          status?: string
+        }
+        Relationships: []
+      }
       blog_posts: {
         Row: {
           author_initial: string
