@@ -11,6 +11,7 @@ import {
   CalendarDays,
   Image as ImageIcon,
   Inbox,
+  ClipboardList,
 } from "lucide-react";
 import { logout } from "@/app/admin/login/actions";
 import { ADMIN_NAV_ITEMS, type AdminNavIconKey } from "@/lib/admin/nav";
@@ -25,6 +26,7 @@ const NAV_ICONS: Record<AdminNavIconKey, React.ComponentType<{ className?: strin
   events: CalendarDays,
   media: ImageIcon,
   leads: Inbox,
+  forms: ClipboardList,
 };
 
 function NavRow({

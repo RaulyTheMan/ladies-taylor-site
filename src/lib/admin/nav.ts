@@ -10,7 +10,8 @@ export type AdminNavIconKey =
   | "brands"
   | "events"
   | "media"
-  | "leads";
+  | "leads"
+  | "forms";
 
 export type AdminNavItem = {
   label: string;
@@ -35,4 +36,5 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
   { label: "Events", href: "/admin/events", iconKey: "events" },
   { label: "Media", href: "/admin/media", iconKey: "media" },
   { label: "Leads", href: "/admin/leads", iconKey: "leads" },
+  { label: "Forms", href: "/admin/forms", iconKey: "forms" },
 ];

@@ -7,12 +7,16 @@ export const dynamic = "force-dynamic";
 export default async function AdminDashboardPage() {
   const supabase = await createSessionClient();
 
-  const [events, brands, posts, leads] = await Promise.all([
+  const [events, brands, posts, leads, formQueries] = await Promise.all([
     supabase.from("events").select("*", { count: "exact", head: true }),
     supabase.from("brands").select("*", { count: "exact", head: true }),
     supabase.from("blog_posts").select("*", { count: "exact", head: true }),
     supabase
       .from("contact_submissions")
+      .select("*", { count: "exact", head: true })
+      .eq("status", "new"),
+    supabase
+      .from("august_query_submissions")
       .select("*", { count: "exact", head: true })
       .eq("status", "new"),
   ]);
@@ -26,6 +30,11 @@ export default async function AdminDashboardPage() {
       count: posts.count ?? 0,
     },
     { label: "New Leads", href: "/admin/leads", count: leads.count ?? 0 },
+    {
+      label: "New Form Queries",
+      href: "/admin/forms",
+      count: formQueries.count ?? 0,
+    },
   ];
 
   return (
