@@ -32,7 +32,7 @@ export default function InstagramEmbeds({ posts }: { posts: EmbeddablePost[] }) 
         strategy="lazyOnload"
         onLoad={() => window.instgrm?.Embeds?.process()}
       />
-      <div className="columns-2 gap-4 md:columns-3 lg:columns-4">
+      <div className="columns-1 gap-4 sm:columns-2 lg:columns-3">
         {posts.map((post) =>
           post.html ? (
             <div

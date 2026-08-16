@@ -18,6 +18,7 @@ const brandSchema = z.object({
   handle: z.string().trim().min(1, "Handle is required."),
   industryKey: z.enum(["services", "food-beverage", "fashion", "beauty"]),
   bio: z.string().trim().default(""),
+  collection: z.string().trim().default(""),
   publishedAt: z.string().trim().optional(),
 });
 
@@ -28,6 +29,7 @@ function parseBrandFormData(formData: FormData) {
     handle: formData.get("handle"),
     industryKey: formData.get("industryKey"),
     bio: formData.get("bio") || "",
+    collection: formData.get("collection") || "",
     publishedAt: formData.get("publishedAt") || undefined,
   });
 
@@ -78,6 +80,7 @@ export async function createBrand(formData: FormData) {
     handle: data.handle,
     industry_key: data.industryKey,
     bio: data.bio,
+    collection: data.collection || null,
     links: data.links,
     post_permalinks: data.postPermalinks,
     avatar_url: avatarUrl,
@@ -115,6 +118,7 @@ export async function updateBrand(id: string, formData: FormData) {
       handle: data.handle,
       industry_key: data.industryKey,
       bio: data.bio,
+      collection: data.collection || null,
       links: data.links,
       post_permalinks: data.postPermalinks,
       ...(avatarUrl ? { avatar_url: avatarUrl } : {}),

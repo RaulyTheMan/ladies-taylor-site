@@ -74,6 +74,8 @@ export default async function EventParticipantsPage({
             <tr className={ADMIN_TABLE_HEAD_ROW_CLASS}>
               <th className={ADMIN_TABLE_CELL_CLASS}>Name</th>
               <th className={ADMIN_TABLE_CELL_CLASS}>Contact</th>
+              <th className={ADMIN_TABLE_CELL_CLASS}>Brand / Role</th>
+              <th className={ADMIN_TABLE_CELL_CLASS}>Why</th>
               <th className={ADMIN_TABLE_CELL_CLASS}>Signed Up</th>
               <th className={ADMIN_TABLE_CELL_CLASS}>Status</th>
               <th className={ADMIN_TABLE_CELL_CLASS}>
@@ -91,6 +93,26 @@ export default async function EventParticipantsPage({
                   {reg.phone}
                   <br />
                   {reg.email}
+                </td>
+                <td className={`${ADMIN_TABLE_CELL_CLASS} text-black/70`}>
+                  {reg.brand_name || reg.designation ? (
+                    <>
+                      {reg.brand_name}
+                      {reg.brand_name && reg.designation && <br />}
+                      {reg.designation}
+                    </>
+                  ) : (
+                    <span className="text-black/40">—</span>
+                  )}
+                </td>
+                <td className={`${ADMIN_TABLE_CELL_CLASS} max-w-xs text-black/70`}>
+                  {reg.reason ? (
+                    <span className="line-clamp-3" title={reg.reason}>
+                      {reg.reason}
+                    </span>
+                  ) : (
+                    <span className="text-black/40">—</span>
+                  )}
                 </td>
                 <td className={`${ADMIN_TABLE_CELL_CLASS} text-black/60`}>
                   {new Date(reg.created_at).toLocaleDateString()}
@@ -147,7 +169,7 @@ export default async function EventParticipantsPage({
             ))}
             {(registrations ?? []).length === 0 && (
               <tr>
-                <td colSpan={5} className={`${ADMIN_TABLE_CELL_CLASS} text-black/60`}>
+                <td colSpan={7} className={`${ADMIN_TABLE_CELL_CLASS} text-black/60`}>
                   No sign-ups yet.
                 </td>
               </tr>

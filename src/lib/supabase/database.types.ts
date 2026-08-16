@@ -123,6 +123,7 @@ export type Database = {
         Row: {
           avatar_url: string | null
           bio: string
+          collection: string | null
           created_at: string
           handle: string
           id: string
@@ -139,6 +140,7 @@ export type Database = {
         Insert: {
           avatar_url?: string | null
           bio?: string
+          collection?: string | null
           created_at?: string
           handle: string
           id?: string
@@ -155,6 +157,7 @@ export type Database = {
         Update: {
           avatar_url?: string | null
           bio?: string
+          collection?: string | null
           created_at?: string
           handle?: string
           id?: string
@@ -300,30 +303,39 @@ export type Database = {
       }
       event_registrations: {
         Row: {
+          brand_name: string | null
           created_at: string
+          designation: string | null
           email: string
           event_id: string
           id: string
           name: string
           phone: string
+          reason: string | null
           status: Database["public"]["Enums"]["registration_status"]
         }
         Insert: {
+          brand_name?: string | null
           created_at?: string
+          designation?: string | null
           email: string
           event_id: string
           id?: string
           name: string
           phone: string
+          reason?: string | null
           status?: Database["public"]["Enums"]["registration_status"]
         }
         Update: {
+          brand_name?: string | null
           created_at?: string
+          designation?: string | null
           email?: string
           event_id?: string
           id?: string
           name?: string
           phone?: string
+          reason?: string | null
           status?: Database["public"]["Enums"]["registration_status"]
         }
         Relationships: [
@@ -512,10 +524,13 @@ export type Database = {
       increment_post_view: { Args: { p_slug: string }; Returns: number }
       register_for_event: {
         Args: {
+          p_brand_name?: string
+          p_designation?: string
           p_email: string
           p_event_id: string
           p_name: string
           p_phone: string
+          p_reason?: string
         }
         Returns: Database["public"]["Enums"]["registration_status"]
       }

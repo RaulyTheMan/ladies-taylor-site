@@ -17,12 +17,14 @@ export default async function BestOfBandsPage() {
 
   return (
     <>
-      <SiteHeader items={bandsNav} />
-      <main className="flex-1 px-4 pb-20 md:px-10">
-        <ListingHero thin="Best" thick="of Br*nds" />
+      <div className="flex flex-1 flex-col bg-white">
+        <SiteHeader items={bandsNav} />
+        <main className="flex-1 px-4 pb-20 md:px-10">
+          <ListingHero thin="Best of" thick="BR*NDS" variant="sans" />
 
-        <BrandGrid brands={brands} />
-      </main>
+          <BrandGrid brands={brands} />
+        </main>
+      </div>
       <Footer />
     </>
   );

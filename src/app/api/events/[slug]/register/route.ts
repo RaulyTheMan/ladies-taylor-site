@@ -7,6 +7,10 @@ const registerSchema = z.object({
   name: z.string().trim().min(1).max(200),
   phone: z.string().trim().min(1).max(50),
   email: z.string().trim().email().max(200),
+  // Optional context captured by the "Join The Waiting List" modal.
+  reason: z.string().trim().max(2000).optional(),
+  brandName: z.string().trim().max(200).optional(),
+  designation: z.string().trim().max(200).optional(),
 });
 
 export async function POST(
@@ -46,6 +50,9 @@ export async function POST(
     p_name: parsed.data.name,
     p_phone: parsed.data.phone,
     p_email: parsed.data.email,
+    p_reason: parsed.data.reason,
+    p_brand_name: parsed.data.brandName,
+    p_designation: parsed.data.designation,
   });
 
   if (error) {

@@ -5,7 +5,7 @@ import SiteHeader from "@/components/SiteHeader";
 import Footer from "@/components/Footer";
 import { eventsNav } from "@/lib/nav";
 import { getEventBySlug, getEvents } from "@/lib/events";
-import EventRegisterForm from "@/components/events/EventRegisterForm";
+import EventRegisterModal from "@/components/events/EventRegisterModal";
 
 function formatRupees(n: number) {
   return `₹${n.toLocaleString("en-IN")}`;
@@ -60,113 +60,111 @@ export default async function EventDetailPage({
 
   return (
     <>
-      <SiteHeader items={eventsNav} />
-      <main className="flex-1 px-4 pb-20 md:px-10">
-        <section className="comic-border overflow-hidden rounded-squircle-lg bg-lt-cream">
-          <div className="flex items-center gap-1.5 bg-lt-red px-4 py-3">
-            <span className="h-3 w-3 rounded-full bg-lt-yellow" />
-            <span className="h-3 w-3 rounded-full bg-lt-blue" />
-            <span className="h-3 w-3 rounded-full bg-lt-green" />
-          </div>
+      <div className="flex flex-1 flex-col bg-white">
+        <SiteHeader items={eventsNav} />
+        <main className="flex-1 pb-20">
+          {/* Full-bleed yellow hero band — image left, details right. */}
+          <section className="bg-lt-yellow px-4 py-10 md:px-10 md:py-14">
+            <div className="mx-auto grid max-w-6xl grid-cols-1 items-start gap-8 md:grid-cols-2 md:gap-14">
+              <div className="comic-border relative aspect-square rounded-squircle-lg bg-lt-red">
+                {event.coverImageUrl && (
+                  <Image
+                    src={event.coverImageUrl}
+                    alt=""
+                    fill
+                    className="rounded-squircle-lg object-cover"
+                    sizes="(min-width: 768px) 45vw, 100vw"
+                    priority
+                  />
+                )}
+              </div>
 
-          <div className="grid grid-cols-1 gap-8 p-6 md:grid-cols-2 md:gap-10 md:p-10">
+              <div>
+                <h1 className="text-5xl font-extrabold leading-[1.05] text-black md:text-6xl">
+                  {event.title}
+                </h1>
+
+                <ul className="mt-8 space-y-2.5 text-sm text-black/80">
+                  <li>{event.date}</li>
+                  <li>{event.time}</li>
+                  <li>{event.duration}</li>
+                  <li className="underline underline-offset-2">
+                    {event.location}
+                  </li>
+                </ul>
+
+                {!event.isPlaceholder && (
+                  <p className="mt-7 text-3xl font-extrabold text-black">
+                    {formatRupees(event.price)}
+                  </p>
+                )}
+
+                {!event.isPlaceholder && <EventRegisterModal slug={slug} />}
+              </div>
+            </div>
+          </section>
+
+          <div className="mx-auto mt-12 grid max-w-5xl grid-cols-1 gap-8 px-4 md:grid-cols-[240px_1fr] md:gap-12 md:px-10">
             <div>
-              <h1 className="font-sans text-4xl font-extrabold leading-none text-black md:text-5xl">
-                {event.title}
-              </h1>
+              <h3 className="text-sm font-bold text-black">Hosted By</h3>
+              <p className="mt-2 text-sm text-black/80">
+                {event.hostedBy.name}
+                <br />
+                {event.hostedBy.role}
+              </p>
 
-              <ul className="mt-6 space-y-2 text-sm text-black/80">
-                <li>{event.date}</li>
-                <li>{event.time}</li>
-                <li>{event.duration}</li>
-                <li className="underline underline-offset-2">
-                  {event.location}
-                </li>
-              </ul>
-
-              {!event.isPlaceholder && (
-                <p className="mt-6 text-3xl font-extrabold text-black">
-                  {formatRupees(event.price)}
-                </p>
-              )}
-
-              {!event.isPlaceholder && <EventRegisterForm slug={slug} />}
+              <h3 className="mt-8 text-sm font-bold text-black">Registered</h3>
+              <p className="mt-2 text-sm text-black/80">
+                <span className="font-bold">{event.registeredCount}</span>{" "}
+                Registered,{" "}
+                <span className="font-bold">{event.waitingCount}</span> Waiting
+              </p>
             </div>
 
-            <div className="relative aspect-[4/3] rounded-squircle-sm bg-lt-gray">
-              {event.coverImageUrl && (
-                <Image
-                  src={event.coverImageUrl}
-                  alt=""
-                  fill
-                  className="rounded-squircle-sm object-cover"
-                  sizes="(min-width: 768px) 50vw, 100vw"
-                />
+            <div>
+              <h2 className="text-base font-bold text-black">
+                What you&apos;ll learn
+              </h2>
+              <p className="mt-3 text-sm leading-relaxed text-black/80">
+                {event.description}
+              </p>
+
+              {event.learnItems.length > 0 && (
+                <ul className="mt-4 list-disc space-y-2 pl-5 text-sm text-black/80">
+                  {event.learnItems.map((item, i) => (
+                    <li key={i}>{item}</li>
+                  ))}
+                </ul>
               )}
             </div>
           </div>
-        </section>
 
-        <div className="mt-12 grid grid-cols-1 gap-8 md:grid-cols-[280px_1fr] md:gap-10">
-          <div>
-            <h3 className="text-sm font-bold text-black">Hosted By</h3>
-            <p className="mt-2 text-sm text-black/80">
-              {event.hostedBy.name}
-              <br />
-              {event.hostedBy.role}
-            </p>
-
-            <h3 className="mt-8 text-sm font-bold text-black">Registered</h3>
-            <p className="mt-2 text-sm text-black/80">
-              <span className="font-bold">{event.registeredCount}</span>{" "}
-              Registered,{" "}
-              <span className="font-bold">{event.waitingCount}</span> Waiting
-            </p>
-          </div>
-
-          <div>
-            <h2 className="text-sm font-bold text-black">
-              What you&apos;ll learn
+          <section className="mt-14 bg-lt-blue px-6 py-16 text-center md:py-20">
+            <h2 className="mx-auto max-w-4xl font-display text-3xl uppercase leading-none text-white sm:text-4xl md:text-5xl">
+              Learn social media like how it&apos;s practiced not like what you
+              see.
             </h2>
-            <p className="mt-2 text-sm leading-relaxed text-black/80">
-              {event.description}
-            </p>
+          </section>
 
-            {event.learnItems.length > 0 && (
-              <ul className="mt-4 list-disc space-y-2 pl-5 text-sm text-black/80">
-                {event.learnItems.map((item, i) => (
-                  <li key={i}>{item}</li>
-                ))}
-              </ul>
+          <section className="mx-auto mt-14 max-w-5xl px-4 md:px-10">
+            <h2 className="font-gothic text-3xl text-black">Location</h2>
+            {event.location === "TBD" ? (
+              <div className="mt-6 aspect-video rounded-squircle-lg bg-lt-gray" />
+            ) : (
+              <div className="mt-6 aspect-video overflow-hidden rounded-squircle-lg">
+                <iframe
+                  src={`https://www.google.com/maps?q=${encodeURIComponent(
+                    event.location
+                  )}&output=embed`}
+                  loading="lazy"
+                  title={`Map showing ${event.location}`}
+                  className="h-full w-full border-0"
+                />
+              </div>
             )}
-          </div>
-        </div>
-
-        <section className="relative left-1/2 right-1/2 -mx-[50vw] mt-12 w-screen bg-lt-blue px-6 py-16 text-center md:py-20">
-          <h2 className="mx-auto max-w-4xl font-display text-3xl uppercase leading-none text-white sm:text-4xl md:text-5xl">
-            Learn social media like how it&apos;s practiced not like what you
-            see.
-          </h2>
-        </section>
-
-        <section className="mt-12 pb-4">
-          <h2 className="font-gothic text-3xl text-black">Location</h2>
-          {event.location === "TBD" ? (
-            <div className="mt-6 aspect-video rounded-squircle-lg bg-lt-gray" />
-          ) : (
-            <div className="mt-6 aspect-video overflow-hidden rounded-squircle-lg">
-              <iframe
-                src={`https://www.google.com/maps?q=${encodeURIComponent(
-                  event.location
-                )}&output=embed`}
-                loading="lazy"
-                title={`Map showing ${event.location}`}
-                className="h-full w-full border-0"
-              />
-            </div>
-          )}
-        </section>
-      </main>
+          </section>
+        </main>
+      </div>
       <Footer />
     </>
   );

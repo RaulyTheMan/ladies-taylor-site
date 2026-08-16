@@ -12,6 +12,9 @@ export default function OurFriendsPage() {
     <ComingSoonPage
       eyebrow="Our Fr**nds"
       title="Our Friends"
+      variant="listing"
+      headingThin="Our"
+      headingThick="FR**NDS"
       description="A proper shoutout page for the people and brands we rate is in the works. Until it's live, check out the brands we've actually worked with."
     >
       <div className="mt-8">

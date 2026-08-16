@@ -32,6 +32,10 @@ export type Brand = {
   links: BrandLink[];
   posts: BrandPost[];
   publishedAt?: string;
+  /** Free-text grouping set in the admin — drives the "Collection" filter. */
+  collection?: string;
+  /** Year the brand was added, derived from published_at (falls back to created_at). */
+  yearAdded?: number;
   // Scaffold entry — handle/bio are deliberately generic placeholders, not
   // an invented real client. Swap in real content when it's ready.
   isPlaceholder?: boolean;
@@ -46,6 +50,12 @@ export function truncate(text: string, maxLength: number) {
   return text.slice(0, maxLength).trimEnd();
 }
 
+function yearOf(dateStr: string | null | undefined) {
+  if (!dateStr) return undefined;
+  const year = new Date(dateStr).getFullYear();
+  return Number.isNaN(year) ? undefined : year;
+}
+
 function mapBrand(row: Tables<"brands">): Brand {
   return {
     slug: row.slug,
@@ -57,6 +67,8 @@ function mapBrand(row: Tables<"brands">): Brand {
     links: (row.links as unknown as BrandLink[]) ?? [],
     posts: row.post_permalinks.map((permalink) => ({ permalink })),
     publishedAt: row.published_at ?? undefined,
+    collection: row.collection ?? undefined,
+    yearAdded: yearOf(row.published_at ?? row.created_at),
     isPlaceholder: row.is_placeholder,
   };
 }

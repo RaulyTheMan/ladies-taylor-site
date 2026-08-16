@@ -22,6 +22,7 @@ export type BrandFormDefaults = {
   handle: string;
   industryKey: IndustryKey;
   bio: string;
+  collection: string;
   links: BrandLink[];
   postPermalinks: string[];
   publishedAt: string; // yyyy-mm-dd, empty if TBD
@@ -162,6 +163,21 @@ export default function BrandForm({
               </option>
             ))}
           </select>
+        </div>
+        <div>
+          <label htmlFor="collection" className={labelClass}>
+            Collection
+          </label>
+          <input
+            id="collection"
+            name="collection"
+            defaultValue={defaults?.collection}
+            placeholder="e.g. Brands of the Month"
+            className={inputClass}
+          />
+          <p className="mt-1 text-xs text-black/50">
+            Groups brands under the Collection filter. Leave blank to omit.
+          </p>
         </div>
         <div>
           <label htmlFor="publishedAt" className={labelClass}>

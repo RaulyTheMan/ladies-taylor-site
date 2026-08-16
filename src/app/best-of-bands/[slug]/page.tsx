@@ -87,65 +87,66 @@ export default async function BrandDetailPage({
 
   return (
     <>
-      <SiteHeader items={bandsNav} />
-      <main className="flex-1 px-4 pb-20 md:px-10">
-        <p className="mt-6 text-xs font-semibold text-black/60">
-          <Link href="/best-of-bands" className="hover:text-black">
-            Best of Brands
-          </Link>{" "}
-          / @{brand.handle}
-        </p>
+      <div className="flex flex-1 flex-col bg-white">
+        <SiteHeader items={bandsNav} />
+        <main className="flex-1 px-4 pb-20 md:px-10">
+          <p className="mt-4 text-sm font-bold text-black">
+            <Link href="/best-of-bands" className="hover:underline">
+              Best of Brands
+            </Link>{" "}
+            / @{brand.handle}
+          </p>
 
-        <div className="mt-4 flex flex-col items-start gap-4 sm:flex-row sm:items-center">
-          <div className="relative flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-full border border-black/10 bg-lt-gray sm:h-24 sm:w-24">
-            {brand.avatar && (
-              <Image
-                src={brand.avatar}
-                alt=""
-                fill
-                className="object-cover"
-                sizes="96px"
-              />
-            )}
-          </div>
-          <div>
-            <div className="flex flex-wrap items-center gap-3">
+          <div className="mt-6 flex flex-col items-start gap-5 sm:flex-row sm:items-center sm:gap-6">
+            <div className="relative flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-full border border-black bg-white sm:h-24 sm:w-24">
+              {brand.avatar && (
+                <Image
+                  src={brand.avatar}
+                  alt=""
+                  fill
+                  className="object-cover"
+                  sizes="96px"
+                />
+              )}
+            </div>
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
               <a
                 href={instagramProfileUrl(brand.handle)}
                 target="_blank"
                 rel="noreferrer noopener"
-                className="font-sans text-3xl font-extrabold text-black hover:underline md:text-4xl"
+                className="text-4xl font-extrabold text-black hover:underline md:text-5xl"
               >
                 @{brand.handle}
               </a>
               <span
-                className={`inline-flex items-center gap-1.5 text-sm font-bold ${industry.colorClass}`}
+                className={`inline-flex items-center gap-1.5 text-base font-medium ${industry.colorClass}`}
               >
-                <IndustryIcon industryKey={brand.industryKey} className="h-4 w-4" />
+                <IndustryIcon industryKey={brand.industryKey} className="h-5 w-5" />
                 {industry.label}
               </span>
             </div>
-            <p className="mt-3 max-w-2xl text-sm leading-relaxed text-black/80">
-              {brand.bio}
-            </p>
           </div>
-        </div>
 
-        <div className="mt-12">
-          <h2 className="font-gothic text-2xl text-black">Best Content</h2>
-          <hr className="mt-2 w-24 border-black/30" />
+          <p className="mt-6 max-w-4xl text-base leading-relaxed text-black/80">
+            {brand.bio}
+          </p>
 
-          {posts.length === 0 ? (
-            <div className="mt-6 rounded-squircle-lg border-2 border-dashed border-black/20 p-10 text-center text-sm text-black/60">
-              Coming soon.
-            </div>
-          ) : (
-            <div className="mt-6">
-              <InstagramEmbeds posts={posts} />
-            </div>
-          )}
-        </div>
-      </main>
+          <div className="mt-12">
+            <h2 className="text-3xl font-extrabold text-black">Best Content</h2>
+            <hr className="mt-3 w-full max-w-md border-black/30" />
+
+            {posts.length === 0 ? (
+              <div className="mt-8 rounded-squircle-lg border-2 border-dashed border-black/20 p-10 text-center text-sm text-black/60">
+                Coming soon.
+              </div>
+            ) : (
+              <div className="mt-8">
+                <InstagramEmbeds posts={posts} />
+              </div>
+            )}
+          </div>
+        </main>
+      </div>
       <Footer />
     </>
   );

@@ -42,6 +42,7 @@ export default async function EditBrandPage({
           handle: brand.handle,
           industryKey: brand.industry_key as IndustryKey,
           bio: brand.bio,
+          collection: brand.collection ?? "",
           links: (brand.links as unknown as BrandLink[]) ?? [],
           postPermalinks: brand.post_permalinks,
           publishedAt: brand.published_at?.slice(0, 10) ?? "",

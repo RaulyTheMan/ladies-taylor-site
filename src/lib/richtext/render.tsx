@@ -101,7 +101,10 @@ function renderNode(
   switch (node.type) {
     case "paragraph":
       return (
-        <p key={key} className="text-sm leading-relaxed text-black/80">
+        // No font-size here on purpose — the size is inherited from whichever
+        // container renders the doc (the article page reads larger than the
+        // desktop window panes), which each one already sets.
+        <p key={key} className="leading-relaxed text-black/80">
           {renderInline(node.content)}
         </p>
       );
@@ -129,7 +132,7 @@ function renderNode(
       return (
         <ul
           key={key}
-          className="list-disc space-y-1 pl-5 text-sm text-black/80"
+          className="list-disc space-y-1 pl-5 text-black/80"
         >
           {(node.content ?? []).map((item, i) => (
             <li key={i}>{renderInline(item.content?.[0]?.content)}</li>
@@ -140,7 +143,7 @@ function renderNode(
       return (
         <ol
           key={key}
-          className="list-decimal space-y-1 pl-5 text-sm text-black/80"
+          className="list-decimal space-y-1 pl-5 text-black/80"
         >
           {(node.content ?? []).map((item, i) => (
             <li key={i}>{renderInline(item.content?.[0]?.content)}</li>
@@ -151,7 +154,7 @@ function renderNode(
       return (
         <blockquote
           key={key}
-          className="border-l-2 border-black/20 pl-4 text-sm italic text-black/70"
+          className="border-l-2 border-black/20 pl-4 italic text-black/70"
         >
           {(node.content ?? []).map((child, i) => renderNode(child, i, nextHeadingId))}
         </blockquote>
