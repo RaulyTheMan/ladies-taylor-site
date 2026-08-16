@@ -2,26 +2,9 @@
 
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import Image from "next/image";
 import OurWorkMosaic from "./OurWorkMosaic";
-
-// Only 5 of these are ever visible at once (rings 0/±1/±2) — the extra 4
-// exist purely so the infinite loop has buffer items to draw from. With
-// exactly 5 items filling exactly 5 visible slots, there's no room for a
-// card to fully leave the screen before it has to reappear on the other
-// side, so any hand-off is forced to happen while still partly visible.
-// Extending the pool gives it that room; nothing about what's on screen at
-// a given moment changes.
-const WORK_ITEMS = [
-  { handle: "@ladies.taylor", label: "Content Strategy", stats: "31K Views | 55 Shares" },
-  { handle: "@paperandpie", label: "Packaging Design", stats: "18K Views | 63 Shares" },
-  { handle: "@cafe.babylon", label: "Social Media Management", stats: "100K Views | 204 Shares" },
-  { handle: "@ladies.taylor", label: "Brand Identity", stats: "42K Views | 89 Shares" },
-  { handle: "@ladies.taylor", label: "Campaign Direction", stats: "76K Views | 140 Shares" },
-  { handle: "@paperandpie", label: "Product Launch Film", stats: "54K Views | 97 Shares" },
-  { handle: "@cafe.babylon", label: "Menu Redesign", stats: "29K Views | 48 Shares" },
-  { handle: "@ladies.taylor", label: "Website Revamp", stats: "63K Views | 112 Shares" },
-  { handle: "@paperandpie", label: "Unboxing Experience", stats: "21K Views | 39 Shares" },
-];
+import { WORK_ITEMS } from "@/lib/work-items";
 
 const OLIVE = "#8f8a5f";
 // Framer Motion interpolates this numerically, so it can't be a CSS var
@@ -143,7 +126,7 @@ export default function OurWork() {
                 type="button"
                 onClick={() => handleClick(i, d)}
                 aria-label={`View ${item.label}`}
-                className="absolute aspect-[9/16] w-40 shrink-0 cursor-pointer appearance-none rounded-squircle-lg border-0 p-0 sm:w-64"
+                className="absolute aspect-[9/16] w-40 shrink-0 cursor-pointer appearance-none overflow-hidden rounded-squircle-lg border-0 p-0 sm:w-64"
                 animate={{
                   x: cardOffset(d),
                   scale: ringScale(abs),
@@ -159,7 +142,28 @@ export default function OurWork() {
                     ? { duration: 0 }
                     : { duration: 0.5, ease: [0.4, 0, 0.2, 1] }
                 }
-              />
+              >
+                {abs === 0 ? (
+                  <video
+                    key={item.video}
+                    className="h-full w-full object-cover"
+                    src={item.video}
+                    poster={item.poster}
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                  />
+                ) : (
+                  <Image
+                    src={item.poster}
+                    alt=""
+                    fill
+                    sizes="256px"
+                    className="object-cover"
+                  />
+                )}
+              </motion.button>
             );
           })}
         </div>
@@ -176,8 +180,6 @@ export default function OurWork() {
             {WORK_ITEMS[captionIndex].handle}
             <br />
             <span className="font-semibold">{WORK_ITEMS[captionIndex].label}</span>
-            <br />
-            {WORK_ITEMS[captionIndex].stats}
           </motion.p>
         </AnimatePresence>
       </div>
