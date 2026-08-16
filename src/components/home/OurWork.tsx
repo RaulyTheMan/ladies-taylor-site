@@ -53,20 +53,40 @@ function cardOffset(d: number) {
   return dir * x;
 }
 
-// A card at this distance or beyond lands well past 2500px of translateX
-// (see cardOffset), so it's guaranteed fully cropped by the container at
-// any realistic viewport width. That makes it safe to silently re-anchor
-// it n slots to the opposite side (instant, no animation — nothing is
-// visible there to see it move) once it drifts this far. Without this, a
-// card that keeps getting shifted the same direction would drift off
-// forever and the "ahead" side would eventually run out of cards, instead
-// of actually looping.
-const RECYCLE_THRESHOLD = 5;
+// The ring renders every work item twice. Re-anchoring a card only reads as
+// a seamless loop if it vanishes and reappears while off-screen, and a card
+// is re-anchored by exactly `n` slots — so `n` has to be larger than the
+// number of slots on screen at once. Six items isn't: the visible window is
+// ~5 slots at 1920px (wider on bigger displays), so wrapping by 6 dropped a
+// card at |d| = 1, right beside the center card, where the instant jump was
+// plainly visible. Twelve slots puts every wrap far outside the viewport.
+const RING_ITEMS = [...WORK_ITEMS, ...WORK_ITEMS];
+
+// Half the ring. A card leaving one end re-anchors to the other, so the
+// wrap happens between d = -6 and d = +5 — both several thousand px of
+// translateX out (see cardOffset), cropped at any realistic viewport width.
+const RECYCLE_THRESHOLD = RING_ITEMS.length / 2;
+
+const INITIAL_ACTIVE = 4;
+
+// Canonical slot for a card: the representative of its position that falls
+// inside the [-RECYCLE_THRESHOLD, RECYCLE_THRESHOLD) window. Used to seed
+// the ring so it starts balanced around the center card — otherwise the
+// first render leaves the whole right-hand side empty until enough clicks
+// have recycled cards over to it.
+function wrapSlot(d: number) {
+  const n = RING_ITEMS.length;
+  return ((((d + RECYCLE_THRESHOLD) % n) + n) % n) - RECYCLE_THRESHOLD;
+}
 
 export default function OurWork() {
-  const [activeIndex, setActiveIndex] = useState(4);
+  const [activeIndex, setActiveIndex] = useState(INITIAL_ACTIVE);
   const [wrapOffsets, setWrapOffsets] = useState<number[]>(() =>
-    WORK_ITEMS.map(() => 0)
+    RING_ITEMS.map(
+      (_, j) =>
+        (wrapSlot(j - INITIAL_ACTIVE) - (j - INITIAL_ACTIVE)) /
+        RING_ITEMS.length
+    )
   );
   // Items recycled by the most recent click (see handleClick) — these
   // should skip their transition for this one render, since the jump only
@@ -74,7 +94,7 @@ export default function OurWork() {
   // wholesale on every click (empty when nothing recycled), so it never
   // needs a separate step to reset it for later clicks.
   const [instantSet, setInstantSet] = useState<Set<number>>(() => new Set());
-  const n = WORK_ITEMS.length;
+  const n = RING_ITEMS.length;
   const captionIndex = ((activeIndex % n) + n) % n;
 
   const handleClick = (i: number, d: number) => {
@@ -88,7 +108,11 @@ export default function OurWork() {
         dj -= n;
         recycledIds.add(j);
       }
-      while (dj <= -RECYCLE_THRESHOLD) {
+      // Strictly less-than, so the two bounds don't both claim d = -HALF and
+      // bounce a card between the ends on the same click (which would mark
+      // it recycled, killing its transition, without actually moving it).
+      // Together the two loops settle every card in [-HALF, HALF - 1].
+      while (dj < -RECYCLE_THRESHOLD) {
         nextOffsets[j] += 1;
         dj += n;
         recycledIds.add(j);
@@ -114,7 +138,7 @@ export default function OurWork() {
           className="relative left-1/2 right-1/2 -mx-[50vw] mt-10 flex h-[26rem] w-screen items-center justify-center overflow-hidden sm:h-[40rem]"
           style={{ perspective: `${PERSPECTIVE}px` }}
         >
-          {WORK_ITEMS.map((item, i) => {
+          {RING_ITEMS.map((item, i) => {
             const d = i + wrapOffsets[i] * n - activeIndex;
             const abs = Math.abs(d);
             const sign = Math.sign(d);
@@ -177,9 +201,9 @@ export default function OurWork() {
             transition={{ duration: 0.25 }}
             className="mt-4 text-center text-xs text-black/60"
           >
-            {WORK_ITEMS[captionIndex].handle}
+            {RING_ITEMS[captionIndex].handle}
             <br />
-            <span className="font-semibold">{WORK_ITEMS[captionIndex].label}</span>
+            <span className="font-semibold">{RING_ITEMS[captionIndex].label}</span>
           </motion.p>
         </AnimatePresence>
       </div>
