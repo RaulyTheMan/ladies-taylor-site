@@ -12,6 +12,7 @@ export const LEAD_STATUSES = [
   "closed",
   "rejected",
   "ghosted",
+  "spam",
 ] as const;
 
 export type LeadStatus = (typeof LEAD_STATUSES)[number];
@@ -24,6 +25,7 @@ export const LEAD_STATUS_LABELS: Record<LeadStatus, string> = {
   closed: "Closed",
   rejected: "Rejected",
   ghosted: "Ghosted",
+  spam: "Spam",
 };
 
 /** The status every new submission lands on. */
