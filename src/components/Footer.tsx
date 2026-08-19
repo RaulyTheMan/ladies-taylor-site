@@ -38,7 +38,12 @@ export default function Footer() {
 
         <div className="flex flex-col gap-2 border-t border-white/10 pt-6 text-xs text-lt-cream/50 md:flex-row md:items-center md:justify-between">
           <p>© {new Date().getFullYear()} Ladies Taylor. All rights reserved.</p>
-          <p>Bengaluru, India</p>
+          <div className="flex items-center gap-4">
+            <Link href="/privacy" prefetch={false} className="hover:text-lt-yellow">
+              Privacy Policy
+            </Link>
+            <p>Bengaluru, India</p>
+          </div>
         </div>
       </div>
     </footer>

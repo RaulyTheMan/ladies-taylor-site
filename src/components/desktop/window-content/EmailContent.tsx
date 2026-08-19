@@ -2,6 +2,10 @@
 
 import Image from "next/image";
 import { useId, useState } from "react";
+import {
+  captureMetaSignals,
+  trackMetaPixelEventWithId,
+} from "@/lib/metaPixel";
 import { PRIMARY_BUTTON_CLASS } from "@/lib/ui";
 
 const FIELD_CLASS =
@@ -72,12 +76,16 @@ export function EmailContent({
               setError(false);
 
               try {
+                const meta = captureMetaSignals();
                 const res = await fetch("/api/contact", {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ name, phone, email, note }),
+                  body: JSON.stringify({ name, phone, email, note, meta }),
                 });
                 if (res.ok) {
+                  trackMetaPixelEventWithId("Lead", meta.eventId, {
+                    content_name: "Desktop Email Window",
+                  });
                   setSubmitted(true);
                 } else {
                   setError(true);

@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { createPublicClient } from "@/lib/supabase/public";
-import { sendAugustQueryNotification } from "@/lib/email";
+import { createPublicClient, logQueryError } from "@/lib/supabase/public";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
+import { sendMetaEvent } from "@/lib/metaCapi";
+import { metaCaptureSchema } from "@/lib/metaCapture";
 
 const CITIES = [
   "Bangalore",
@@ -36,6 +37,8 @@ const querySchema = z.object({
   brandCategory: z.enum(BRAND_CATEGORIES),
   services: z.array(z.string().trim().min(1)).min(1),
   budget: z.enum(BUDGETS),
+  // Optional so a submission still succeeds if the browser blocked the pixel.
+  meta: metaCaptureSchema.optional(),
 });
 
 export async function POST(request: Request) {
@@ -54,7 +57,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid submission." }, { status: 400 });
   }
 
-  const { name, phone, email, city, brandName, brandCategory, services, budget } =
+  const { name, phone, email, city, brandName, brandCategory, services, budget, meta } =
     parsed.data;
 
   const supabase = createPublicClient();
@@ -67,29 +70,39 @@ export async function POST(request: Request) {
     brand_category: brandCategory,
     services,
     budget,
+    fbp: meta?.fbp ?? null,
+    fbc: meta?.fbc ?? null,
+    fb_event_id: meta?.eventId ?? null,
+    event_source_url: meta?.eventSourceUrl ?? null,
   });
 
   if (error) {
+    logQueryError("api/august-query insert", error);
     return NextResponse.json(
       { error: "Something went wrong. Please try again." },
       { status: 500 }
     );
   }
 
-  try {
-    await sendAugustQueryNotification({
-      name,
-      phone,
+  // Server-side copy of the browser's Lead event, deduped by the shared event
+  // id. Deliberately awaited but never fatal: this is the only copy that
+  // survives an ad blocker, so a failure is worth logging, not worth failing
+  // the submission over.
+  await sendMetaEvent({
+    eventName: "Lead",
+    eventId: meta?.eventId,
+    eventSourceUrl: meta?.eventSourceUrl,
+    actionSource: "website",
+    customData: { content_name: "August Query Form", lead_source: "august_query" },
+    userData: {
       email,
-      city,
-      brandName,
-      brandCategory,
-      services,
-      budget,
-    });
-  } catch {
-    // Notification email is best-effort — the submission itself already saved.
-  }
+      phone,
+      fbp: meta?.fbp,
+      fbc: meta?.fbc,
+      clientIp: ip,
+      userAgent: request.headers.get("user-agent"),
+    },
+  });
 
   return NextResponse.json({ ok: true });
 }

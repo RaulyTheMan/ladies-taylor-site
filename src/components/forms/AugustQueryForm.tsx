@@ -5,7 +5,7 @@ import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { useMemo, useState } from "react";
 import { PRIMARY_BUTTON_CLASS } from "@/lib/ui";
-import { trackMetaPixelEvent } from "@/lib/metaPixel";
+import { captureMetaSignals, trackMetaPixelEventWithId } from "@/lib/metaPixel";
 
 const CITIES = [
   "Bangalore",
@@ -125,13 +125,20 @@ export default function AugustQueryForm() {
     setSubmitting(true);
     setError(false);
     try {
+      // Captured before the request so the ad-click identifiers reach the
+      // server, which reports the same Lead event via the Conversions API —
+      // that copy still lands when an ad blocker suppresses fbq below.
+      const meta = captureMetaSignals();
+
       const res = await fetch("/api/august-query", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify({ ...data, meta }),
       });
       if (res.ok) {
-        trackMetaPixelEvent("Lead", { content_name: "August Query Form" });
+        trackMetaPixelEventWithId("Lead", meta.eventId, {
+          content_name: "August Query Form",
+        });
         setSubmitted(true);
       } else {
         setError(true);

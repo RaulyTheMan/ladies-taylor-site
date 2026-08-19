@@ -3,6 +3,10 @@
 import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
 import { useState } from "react";
+import {
+  captureMetaSignals,
+  trackMetaPixelEventWithId,
+} from "@/lib/metaPixel";
 import { PRIMARY_BUTTON_CLASS } from "@/lib/ui";
 
 export default function ContactFormCard() {
@@ -62,12 +66,16 @@ export default function ContactFormCard() {
                 setError(false);
 
                 try {
+                  const meta = captureMetaSignals();
                   const res = await fetch("/api/contact", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ name, phone, email }),
+                    body: JSON.stringify({ name, phone, email, meta }),
                   });
                   if (res.ok) {
+                    trackMetaPixelEventWithId("Lead", meta.eventId, {
+                      content_name: "Contact Form",
+                    });
                     setSubmitted(true);
                   } else {
                     setError(true);

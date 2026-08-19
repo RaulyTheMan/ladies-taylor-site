@@ -43,27 +43,6 @@ export async function sendWhatsappLeadNotification(data: {
   });
 }
 
-export async function sendAugustQueryNotification(data: {
-  name: string;
-  phone: string;
-  email: string;
-  city: string;
-  brandName: string;
-  brandCategory: string;
-  services: string[];
-  budget: string;
-}) {
-  const resend = getResend();
-  if (!resend || !notificationEmail) return;
-
-  await resend.emails.send({
-    from: "Ladies Taylor <onboarding@resend.dev>",
-    to: notificationEmail,
-    subject: `New August query form submission from ${data.name}`,
-    text: `Name: ${data.name}\nPhone: ${data.phone}\nEmail: ${data.email}\nCity: ${data.city}\n\nBrand: ${data.brandName}\nBrand category: ${data.brandCategory}\nServices: ${data.services.join(", ")}\nBudget: ${data.budget}`,
-  });
-}
-
 export async function sendNewsletterNotification(data: {
   email: string;
   source: string;

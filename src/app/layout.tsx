@@ -9,6 +9,7 @@ import {
 } from "@/lib/site";
 import SiteCursor from "@/components/SiteCursor";
 import MetaPixel from "@/components/MetaPixel";
+import { Analytics } from "@vercel/analytics/next";
 
 const drukWide = localFont({
   src: [
@@ -61,6 +62,9 @@ export default function RootLayout({
         {children}
         <SiteCursor />
         <MetaPixel />
+        {/* Cookieless and aggregate-only, so it needs no consent gate — unlike
+            the Meta Pixel above, which does set marketing cookies. */}
+        <Analytics />
       </body>
     </html>
   );

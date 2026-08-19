@@ -22,6 +22,12 @@ export type Database = {
           city: string
           created_at: string
           email: string
+          event_source_url: string | null
+          fb_event_id: string | null
+          fb_lead_sent_at: string | null
+          fb_reported_status: string | null
+          fbc: string | null
+          fbp: string | null
           id: string
           name: string
           notes: string | null
@@ -36,6 +42,12 @@ export type Database = {
           city: string
           created_at?: string
           email: string
+          event_source_url?: string | null
+          fb_event_id?: string | null
+          fb_lead_sent_at?: string | null
+          fb_reported_status?: string | null
+          fbc?: string | null
+          fbp?: string | null
           id?: string
           name: string
           notes?: string | null
@@ -50,6 +62,12 @@ export type Database = {
           city?: string
           created_at?: string
           email?: string
+          event_source_url?: string | null
+          fb_event_id?: string | null
+          fb_lead_sent_at?: string | null
+          fb_reported_status?: string | null
+          fbc?: string | null
+          fbp?: string | null
           id?: string
           name?: string
           notes?: string | null
@@ -177,6 +195,12 @@ export type Database = {
         Row: {
           created_at: string
           email: string
+          event_source_url: string | null
+          fb_event_id: string | null
+          fb_lead_sent_at: string | null
+          fb_reported_status: string | null
+          fbc: string | null
+          fbp: string | null
           id: string
           name: string
           notes: string | null
@@ -186,6 +210,12 @@ export type Database = {
         Insert: {
           created_at?: string
           email: string
+          event_source_url?: string | null
+          fb_event_id?: string | null
+          fb_lead_sent_at?: string | null
+          fb_reported_status?: string | null
+          fbc?: string | null
+          fbp?: string | null
           id?: string
           name: string
           notes?: string | null
@@ -195,6 +225,12 @@ export type Database = {
         Update: {
           created_at?: string
           email?: string
+          event_source_url?: string | null
+          fb_event_id?: string | null
+          fb_lead_sent_at?: string | null
+          fb_reported_status?: string | null
+          fbc?: string | null
+          fbp?: string | null
           id?: string
           name?: string
           notes?: string | null
@@ -469,6 +505,7 @@ export type Database = {
         Row: {
           contact_submission_id: string | null
           created_at: string
+          fb_reported_status: string | null
           id: string
           interested: boolean | null
           phone: string
@@ -480,6 +517,7 @@ export type Database = {
         Insert: {
           contact_submission_id?: string | null
           created_at?: string
+          fb_reported_status?: string | null
           id?: string
           interested?: boolean | null
           phone: string
@@ -491,6 +529,7 @@ export type Database = {
         Update: {
           contact_submission_id?: string | null
           created_at?: string
+          fb_reported_status?: string | null
           id?: string
           interested?: boolean | null
           phone?: string
