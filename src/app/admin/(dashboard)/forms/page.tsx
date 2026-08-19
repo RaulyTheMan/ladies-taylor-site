@@ -3,6 +3,7 @@ import { createSessionClient } from "@/lib/supabase/server";
 import { ADMIN_H1_CLASS } from "@/lib/admin/ui";
 import AdminSearchInput from "@/components/admin/AdminSearchInput";
 import FormsQueryTable from "@/components/admin/tables/FormsQueryTable";
+import { LEAD_STATUS_OPTIONS } from "@/lib/admin/leadStatus";
 
 export const dynamic = "force-dynamic";
 
@@ -42,6 +43,14 @@ export default async function AdminFormsPage({
         Submissions from the /forms-august-query intake form.
       </p>
 
+      {error && (
+        <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+          Couldn&apos;t load submissions — the database query failed. This list
+          may be incomplete or empty even if submissions exist. Check the server
+          logs.
+        </div>
+      )}
+
       <div className="mt-4 flex flex-wrap items-center gap-3">
         <Suspense fallback={null}>
           <AdminSearchInput placeholder="Search by name, brand, email, or city..." />
@@ -53,9 +62,11 @@ export default async function AdminFormsPage({
         <FormsQueryTable
           submissions={filtered}
           emptyMessage={
-            query || (status && status !== "all")
-              ? "No submissions match your filters."
-              : "No submissions yet."
+            error
+              ? "Unable to load submissions right now."
+              : query || (status && status !== "all")
+                ? "No submissions match your filters."
+                : "No submissions yet."
           }
         />
       </div>
@@ -66,12 +77,7 @@ export default async function AdminFormsPage({
 function StatusFilter({ current }: { current: string }) {
   return (
     <div className="flex flex-wrap gap-1.5">
-      {[
-        { value: "all", label: "All" },
-        { value: "new", label: "New" },
-        { value: "contacted", label: "Contacted" },
-        { value: "closed", label: "Closed" },
-      ].map((option) => (
+      {[{ value: "all", label: "All" }, ...LEAD_STATUS_OPTIONS].map((option) => (
         <a
           key={option.value}
           href={option.value === "all" ? "?" : `?status=${option.value}`}

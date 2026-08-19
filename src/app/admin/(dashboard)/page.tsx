@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createSessionClient } from "@/lib/supabase/server";
 import { ADMIN_H1_CLASS } from "@/lib/admin/ui";
+import { DEFAULT_LEAD_STATUS } from "@/lib/admin/leadStatus";
 
 export const dynamic = "force-dynamic";
 
@@ -14,11 +15,11 @@ export default async function AdminDashboardPage() {
     supabase
       .from("contact_submissions")
       .select("*", { count: "exact", head: true })
-      .eq("status", "new"),
+      .eq("status", DEFAULT_LEAD_STATUS),
     supabase
       .from("august_query_submissions")
       .select("*", { count: "exact", head: true })
-      .eq("status", "new"),
+      .eq("status", DEFAULT_LEAD_STATUS),
   ]);
 
   const cards = [

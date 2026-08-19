@@ -4,6 +4,7 @@ import { ADMIN_H1_CLASS } from "@/lib/admin/ui";
 import AdminSearchInput from "@/components/admin/AdminSearchInput";
 import LeadsContactsTable from "@/components/admin/tables/LeadsContactsTable";
 import LeadsSubscribersTable from "@/components/admin/tables/LeadsSubscribersTable";
+import { LEAD_STATUS_OPTIONS } from "@/lib/admin/leadStatus";
 
 export const dynamic = "force-dynamic";
 
@@ -87,12 +88,7 @@ export default async function AdminLeadsPage({
 function StatusFilter({ current }: { current: string }) {
   return (
     <div className="flex flex-wrap gap-1.5">
-      {[
-        { value: "all", label: "All" },
-        { value: "new", label: "New" },
-        { value: "contacted", label: "Contacted" },
-        { value: "closed", label: "Closed" },
-      ].map((option) => (
+      {[{ value: "all", label: "All" }, ...LEAD_STATUS_OPTIONS].map((option) => (
         <a
           key={option.value}
           href={option.value === "all" ? "?" : `?status=${option.value}`}

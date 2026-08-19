@@ -5,6 +5,7 @@ import { createColumnHelper } from "@tanstack/react-table";
 import AdminSortableTable from "@/components/admin/AdminSortableTable";
 import { adminTableFeatures } from "@/lib/admin/tableFeatures";
 import { ADMIN_INPUT_CLASS } from "@/lib/admin/ui";
+import { LEAD_STATUS_OPTIONS } from "@/lib/admin/leadStatus";
 import type { Tables } from "@/lib/supabase/database.types";
 import { updateContactStatus } from "@/app/admin/(dashboard)/leads/actions";
 
@@ -84,11 +85,13 @@ export default function LeadsContactsTable({
                 name="status"
                 form={formId}
                 defaultValue={contact.status}
-                className={`${ADMIN_INPUT_CLASS} mt-0 w-32`}
+                className={`${ADMIN_INPUT_CLASS} mt-0 w-44`}
               >
-                <option value="new">New</option>
-                <option value="contacted">Contacted</option>
-                <option value="closed">Closed</option>
+                {LEAD_STATUS_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
               </select>
             </>
           );

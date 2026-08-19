@@ -5,6 +5,7 @@ import { createColumnHelper } from "@tanstack/react-table";
 import AdminSortableTable from "@/components/admin/AdminSortableTable";
 import { adminTableFeatures } from "@/lib/admin/tableFeatures";
 import { ADMIN_INPUT_CLASS, ADMIN_BADGE_CLASS } from "@/lib/admin/ui";
+import { LEAD_STATUS_OPTIONS } from "@/lib/admin/leadStatus";
 import type { Tables } from "@/lib/supabase/database.types";
 import { updateFormQueryStatus } from "@/app/admin/(dashboard)/forms/actions";
 
@@ -117,11 +118,13 @@ export default function FormsQueryTable({
                 name="status"
                 form={formId}
                 defaultValue={submission.status}
-                className={`${ADMIN_INPUT_CLASS} mt-0 w-32`}
+                className={`${ADMIN_INPUT_CLASS} mt-0 w-44`}
               >
-                <option value="new">New</option>
-                <option value="contacted">Contacted</option>
-                <option value="closed">Closed</option>
+                {LEAD_STATUS_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
               </select>
             </>
           );
