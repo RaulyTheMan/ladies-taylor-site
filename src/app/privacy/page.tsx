@@ -61,8 +61,8 @@ export default function PrivacyPage() {
                 <li>
                   <strong>Enquiry forms</strong> — your name, phone number and
                   email address. Our detailed enquiry form also asks for your
-                  city, brand name, brand category, the services you need and
-                  your budget range.
+                  city, brand name, brand category, a description of your
+                  brand and your budget range.
                 </li>
                 <li>
                   <strong>Event registrations</strong> — your name, phone,

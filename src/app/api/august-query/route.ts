@@ -35,7 +35,7 @@ const querySchema = z.object({
   city: z.enum(CITIES),
   brandName: z.string().trim().min(1).max(200),
   brandCategory: z.enum(BRAND_CATEGORIES),
-  services: z.array(z.string().trim().min(1)).min(1),
+  aboutBrand: z.string().trim().min(150).max(2000),
   budget: z.enum(BUDGETS),
   // Optional so a submission still succeeds if the browser blocked the pixel.
   meta: metaCaptureSchema.optional(),
@@ -57,7 +57,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid submission." }, { status: 400 });
   }
 
-  const { name, phone, email, city, brandName, brandCategory, services, budget, meta } =
+  const { name, phone, email, city, brandName, brandCategory, aboutBrand, budget, meta } =
     parsed.data;
 
   const supabase = createPublicClient();
@@ -68,7 +68,7 @@ export async function POST(request: Request) {
     city,
     brand_name: brandName,
     brand_category: brandCategory,
-    services,
+    about_brand: aboutBrand,
     budget,
     fbp: meta?.fbp ?? null,
     fbc: meta?.fbc ?? null,

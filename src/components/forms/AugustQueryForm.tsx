@@ -28,15 +28,9 @@ const BRAND_CATEGORIES = [
   "Other",
 ] as const;
 
-const SERVICES = [
-  "Social Media",
-  "Videography/Photography",
-  "Branding",
-  "Performance Marketing",
-  "All of the above",
-] as const;
-
 const BUDGETS = ["75K", "1 Lakh", "2 Lakhs", "10 Lakhs"] as const;
+
+const ABOUT_BRAND_MIN_LENGTH = 150;
 
 type FormState = {
   name: string;
@@ -45,7 +39,7 @@ type FormState = {
   city: string;
   brandName: string;
   brandCategory: string;
-  services: string[];
+  aboutBrand: string;
   budget: string;
 };
 
@@ -56,7 +50,7 @@ const EMPTY_STATE: FormState = {
   city: "",
   brandName: "",
   brandCategory: "",
-  services: [],
+  aboutBrand: "",
   budget: "",
 };
 
@@ -68,11 +62,8 @@ const inputClass =
 const selectClass =
   "mt-1.5 w-full appearance-none border-b-2 border-black/20 bg-transparent bg-[url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 20 20%22 fill=%22none%22 stroke=%22black%22 stroke-width=%222%22><path d=%22M5 8l5 5 5-5%22/></svg>')] bg-[right_0.25rem_center] bg-no-repeat pb-2 pr-6 text-base text-black focus:border-lt-red focus:outline-none";
 
-const servicePillClass =
-  "comic-border-sm rounded-squircle-sm bg-white px-3.5 py-2 text-left text-sm font-bold text-black transition-transform hover:-translate-y-0.5";
-
-const servicePillActiveClass =
-  "comic-border-sm rounded-squircle-sm bg-lt-yellow px-3.5 py-2 text-left text-sm font-bold text-black";
+const textareaClass =
+  "mt-1.5 w-full resize-none border-b-2 border-black/20 bg-transparent pb-2 text-base text-black placeholder:text-black/30 focus:border-lt-red focus:outline-none";
 
 export default function AugustQueryForm() {
   const [page, setPage] = useState<1 | 2>(1);
@@ -95,19 +86,10 @@ export default function AugustQueryForm() {
     () =>
       data.brandName.trim().length > 0 &&
       data.brandCategory.length > 0 &&
-      data.services.length > 0 &&
+      data.aboutBrand.trim().length >= ABOUT_BRAND_MIN_LENGTH &&
       data.budget.length > 0,
     [data]
   );
-
-  function toggleService(service: string) {
-    setData((d) => ({
-      ...d,
-      services: d.services.includes(service)
-        ? d.services.filter((s) => s !== service)
-        : [...d.services, service],
-    }));
-  }
 
   function goToPage2() {
     if (!page1Valid) return;
@@ -359,25 +341,27 @@ export default function AugustQueryForm() {
                     )}
                   </label>
 
-                  <div>
-                    <span className={labelClass}>What services do you need?</span>
-                    <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
-                      {SERVICES.map((service) => (
-                        <button
-                          key={service}
-                          type="button"
-                          onClick={() => toggleService(service)}
-                          className={
-                            data.services.includes(service)
-                              ? servicePillActiveClass
-                              : servicePillClass
-                          }
-                        >
-                          {service}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+                  <label className="block">
+                    <span className={labelClass}>Tell us about your brand</span>
+                    <textarea
+                      value={data.aboutBrand}
+                      onChange={(e) =>
+                        setData((d) => ({ ...d, aboutBrand: e.target.value }))
+                      }
+                      placeholder="What does your brand do, who's it for, and what are you hoping we can help with?"
+                      rows={5}
+                      className={textareaClass}
+                    />
+                    <span
+                      className={`mt-1.5 block text-right text-xs font-semibold ${
+                        data.aboutBrand.trim().length >= ABOUT_BRAND_MIN_LENGTH
+                          ? "text-black/40"
+                          : "text-lt-red"
+                      }`}
+                    >
+                      {data.aboutBrand.trim().length}/{ABOUT_BRAND_MIN_LENGTH}
+                    </span>
+                  </label>
 
                   <label className="block">
                     <span className={labelClass}>What&rsquo;s your budget?</span>

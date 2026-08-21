@@ -56,12 +56,15 @@ export default function FormsQueryTable({
           </span>
         ),
       }),
-      helper.accessor("services", {
-        header: "Services",
+      helper.accessor("about_brand", {
+        header: "About Brand",
         enableSorting: false,
         cell: ({ row }) => (
-          <span className="text-black/70">
-            {row.original.services.join(", ")}
+          <span
+            className="block max-w-[260px] truncate text-black/70"
+            title={row.original.about_brand}
+          >
+            {row.original.about_brand}
           </span>
         ),
       }),

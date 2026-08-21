@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       august_query_submissions: {
         Row: {
+          about_brand: string
           brand_category: string
           brand_name: string
           budget: string
@@ -32,10 +33,10 @@ export type Database = {
           name: string
           notes: string | null
           phone: string
-          services: string[]
           status: string
         }
         Insert: {
+          about_brand: string
           brand_category: string
           brand_name: string
           budget: string
@@ -52,10 +53,10 @@ export type Database = {
           name: string
           notes?: string | null
           phone: string
-          services?: string[]
           status?: string
         }
         Update: {
+          about_brand?: string
           brand_category?: string
           brand_name?: string
           budget?: string
@@ -72,7 +73,6 @@ export type Database = {
           name?: string
           notes?: string | null
           phone?: string
-          services?: string[]
           status?: string
         }
         Relationships: []
