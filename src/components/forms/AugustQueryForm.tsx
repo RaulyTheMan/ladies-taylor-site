@@ -30,7 +30,7 @@ const BRAND_CATEGORIES = [
 
 const BUDGETS = ["75K", "1 Lakh", "2 Lakhs", "10 Lakhs"] as const;
 
-const ABOUT_BRAND_MIN_LENGTH = 150;
+const ABOUT_BRAND_MIN_LENGTH = 100;
 
 type FormState = {
   name: string;
@@ -65,12 +65,16 @@ const selectClass =
 const textareaClass =
   "mt-1.5 w-full resize-none border-b-2 border-black/20 bg-transparent pb-2 text-base text-black placeholder:text-black/30 focus:border-lt-red focus:outline-none";
 
+const textareaErrorClass =
+  "mt-1.5 w-full resize-none border-b-2 border-lt-red bg-transparent pb-2 text-base text-black placeholder:text-black/30 focus:outline-none";
+
 export default function AugustQueryForm() {
   const [page, setPage] = useState<1 | 2>(1);
   const [direction, setDirection] = useState(1);
   const [data, setData] = useState<FormState>(EMPTY_STATE);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(false);
+  const [aboutBrandError, setAboutBrandError] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
   const page1Valid = useMemo(
@@ -82,11 +86,12 @@ export default function AugustQueryForm() {
     [data]
   );
 
+  const aboutBrandValid = data.aboutBrand.trim().length >= ABOUT_BRAND_MIN_LENGTH;
+
   const page2Valid = useMemo(
     () =>
       data.brandName.trim().length > 0 &&
       data.brandCategory.length > 0 &&
-      data.aboutBrand.trim().length >= ABOUT_BRAND_MIN_LENGTH &&
       data.budget.length > 0,
     [data]
   );
@@ -104,6 +109,10 @@ export default function AugustQueryForm() {
 
   async function handleSubmit() {
     if (!page2Valid) return;
+    if (!aboutBrandValid) {
+      setAboutBrandError(true);
+      return;
+    }
     setSubmitting(true);
     setError(false);
     try {
@@ -345,22 +354,29 @@ export default function AugustQueryForm() {
                     <span className={labelClass}>Tell us about your brand</span>
                     <textarea
                       value={data.aboutBrand}
-                      onChange={(e) =>
-                        setData((d) => ({ ...d, aboutBrand: e.target.value }))
-                      }
-                      placeholder="What does your brand do, who's it for, and what are you hoping we can help with?"
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setData((d) => ({ ...d, aboutBrand: value }));
+                        if (value.trim().length >= ABOUT_BRAND_MIN_LENGTH) {
+                          setAboutBrandError(false);
+                        }
+                      }}
+                      placeholder="Tell us about your brand in atleast 100 characters."
                       rows={5}
-                      className={textareaClass}
+                      className={aboutBrandError ? textareaErrorClass : textareaClass}
                     />
-                    <span
-                      className={`mt-1.5 block text-right text-xs font-semibold ${
-                        data.aboutBrand.trim().length >= ABOUT_BRAND_MIN_LENGTH
-                          ? "text-black/40"
-                          : "text-lt-red"
-                      }`}
-                    >
-                      {data.aboutBrand.trim().length}/{ABOUT_BRAND_MIN_LENGTH}
-                    </span>
+                    <div className="mt-1.5 flex items-center justify-between">
+                      {aboutBrandError ? (
+                        <span className="text-xs font-semibold text-lt-red">
+                          Needs to be atleast 100 characters
+                        </span>
+                      ) : (
+                        <span />
+                      )}
+                      <span className="text-right text-xs font-semibold text-black/40">
+                        {data.aboutBrand.trim().length}/{ABOUT_BRAND_MIN_LENGTH}
+                      </span>
+                    </div>
                   </label>
 
                   <label className="block">

@@ -35,7 +35,7 @@ const querySchema = z.object({
   city: z.enum(CITIES),
   brandName: z.string().trim().min(1).max(200),
   brandCategory: z.enum(BRAND_CATEGORIES),
-  aboutBrand: z.string().trim().min(150).max(2000),
+  aboutBrand: z.string().trim().min(100).max(2000),
   budget: z.enum(BUDGETS),
   // Optional so a submission still succeeds if the browser blocked the pixel.
   meta: metaCaptureSchema.optional(),
