@@ -4,6 +4,7 @@ import { createPublicClient, logQueryError } from "@/lib/supabase/public";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 import { sendMetaEvent } from "@/lib/metaCapi";
 import { metaCaptureSchema } from "@/lib/metaCapture";
+import { isLikelyGibberish } from "@/lib/textQuality";
 
 const CITIES = [
   "Bangalore",
@@ -59,6 +60,10 @@ export async function POST(request: Request) {
 
   const { name, phone, email, city, brandName, brandCategory, aboutBrand, budget, meta } =
     parsed.data;
+
+  if (isLikelyGibberish(aboutBrand)) {
+    return NextResponse.json({ error: "about_brand_invalid" }, { status: 422 });
+  }
 
   const supabase = createPublicClient();
   const { error } = await supabase.from("august_query_submissions").insert({

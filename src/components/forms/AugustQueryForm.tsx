@@ -6,6 +6,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useMemo, useState } from "react";
 import { PRIMARY_BUTTON_CLASS } from "@/lib/ui";
 import { captureMetaSignals, trackMetaPixelEventWithId } from "@/lib/metaPixel";
+import { isLikelyGibberish } from "@/lib/textQuality";
 
 const CITIES = [
   "Bangalore",
@@ -31,6 +32,10 @@ const BRAND_CATEGORIES = [
 const BUDGETS = ["75K", "1 Lakh", "2 Lakhs", "10 Lakhs"] as const;
 
 const ABOUT_BRAND_MIN_LENGTH = 100;
+
+const ABOUT_BRAND_TOO_SHORT_MESSAGE = "Needs to be atleast 100 characters";
+const ABOUT_BRAND_GIBBERISH_MESSAGE =
+  "That doesn't look like a real answer — tell us about your brand in your own words";
 
 type FormState = {
   name: string;
@@ -74,7 +79,7 @@ export default function AugustQueryForm() {
   const [data, setData] = useState<FormState>(EMPTY_STATE);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(false);
-  const [aboutBrandError, setAboutBrandError] = useState(false);
+  const [aboutBrandError, setAboutBrandError] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
 
   const page1Valid = useMemo(
@@ -110,7 +115,11 @@ export default function AugustQueryForm() {
   async function handleSubmit() {
     if (!page2Valid) return;
     if (!aboutBrandValid) {
-      setAboutBrandError(true);
+      setAboutBrandError(ABOUT_BRAND_TOO_SHORT_MESSAGE);
+      return;
+    }
+    if (isLikelyGibberish(data.aboutBrand)) {
+      setAboutBrandError(ABOUT_BRAND_GIBBERISH_MESSAGE);
       return;
     }
     setSubmitting(true);
@@ -131,6 +140,13 @@ export default function AugustQueryForm() {
           content_name: "August Query Form",
         });
         setSubmitted(true);
+      } else if (res.status === 422) {
+        const body = await res.json().catch(() => null);
+        if (body?.error === "about_brand_invalid") {
+          setAboutBrandError(ABOUT_BRAND_GIBBERISH_MESSAGE);
+        } else {
+          setError(true);
+        }
       } else {
         setError(true);
       }
@@ -357,8 +373,11 @@ export default function AugustQueryForm() {
                       onChange={(e) => {
                         const value = e.target.value;
                         setData((d) => ({ ...d, aboutBrand: value }));
-                        if (value.trim().length >= ABOUT_BRAND_MIN_LENGTH) {
-                          setAboutBrandError(false);
+                        if (
+                          value.trim().length >= ABOUT_BRAND_MIN_LENGTH &&
+                          !isLikelyGibberish(value)
+                        ) {
+                          setAboutBrandError(null);
                         }
                       }}
                       placeholder="Tell us about your brand in atleast 100 characters."
@@ -368,7 +387,7 @@ export default function AugustQueryForm() {
                     <div className="mt-1.5 flex items-center justify-between">
                       {aboutBrandError ? (
                         <span className="text-xs font-semibold text-lt-red">
-                          Needs to be atleast 100 characters
+                          {aboutBrandError}
                         </span>
                       ) : (
                         <span />
