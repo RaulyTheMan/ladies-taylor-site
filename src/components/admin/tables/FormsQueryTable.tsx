@@ -38,35 +38,83 @@ export default function FormsQueryTable({
           </span>
         ),
       }),
-      helper.accessor("city", {
-        header: "City",
-        cell: ({ row }) => (
-          <span className="text-black/70">{row.original.city}</span>
-        ),
-      }),
       helper.accessor("brand_name", {
-        header: "Brand",
+        header: "Company",
         cell: ({ row }) => (
           <span className="text-black/70">
             {row.original.brand_name}
-            <br />
-            <span className={ADMIN_BADGE_CLASS}>
-              {row.original.brand_category}
-            </span>
+            {row.original.website_url && (
+              <>
+                <br />
+                <a
+                  href={row.original.website_url}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  className="underline"
+                >
+                  {row.original.website_url}
+                </a>
+              </>
+            )}
+            {row.original.brand_category && (
+              <>
+                <br />
+                <span className={ADMIN_BADGE_CLASS}>{row.original.brand_category}</span>
+              </>
+            )}
           </span>
         ),
       }),
-      helper.accessor("about_brand", {
-        header: "About Brand",
+      helper.display({
+        id: "needs",
+        header: "Needs",
         enableSorting: false,
-        cell: ({ row }) => (
-          <span
-            className="block max-w-[260px] truncate text-black/70"
-            title={row.original.about_brand}
-          >
-            {row.original.about_brand}
-          </span>
-        ),
+        cell: ({ row }) => {
+          const services = row.original.services;
+          return (
+            <span className="block max-w-[240px] text-black/70">
+              {services && services.length > 0 ? services.join(", ") : "\u2014"}
+              {row.original.timeline && (
+                <>
+                  <br />
+                  <span className={ADMIN_BADGE_CLASS}>{row.original.timeline}</span>
+                </>
+              )}
+            </span>
+          );
+        },
+      }),
+      helper.display({
+        id: "profile",
+        header: "Profile",
+        enableSorting: false,
+        cell: ({ row }) => {
+          const submission = row.original;
+          // Pre-Aug-25 rows have city/about_brand instead of the qualifying
+          // answers, so show whichever set the row actually has.
+          const lines = [
+            submission.business_stage,
+            submission.role,
+            submission.has_branding ? `Branding: ${submission.has_branding}` : null,
+            submission.city,
+          ].filter(Boolean);
+          return (
+            <span className="block max-w-[220px] text-black/70">
+              {lines.length > 0 ? lines.join(" \u00b7 ") : "\u2014"}
+              {submission.about_brand && (
+                <>
+                  <br />
+                  <span
+                    className="block max-w-[220px] truncate text-black/50"
+                    title={submission.about_brand}
+                  >
+                    {submission.about_brand}
+                  </span>
+                </>
+              )}
+            </span>
+          );
+        },
       }),
       helper.accessor("budget", {
         header: "Budget",

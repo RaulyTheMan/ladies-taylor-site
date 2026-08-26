@@ -16,11 +16,11 @@ export type Database = {
     Tables: {
       august_query_submissions: {
         Row: {
-          about_brand: string
-          brand_category: string
+          about_brand: string | null
+          brand_category: string | null
           brand_name: string
           budget: string
-          city: string
+          city: string | null
           created_at: string
           email: string
           event_source_url: string | null
@@ -34,13 +34,20 @@ export type Database = {
           notes: string | null
           phone: string
           status: string
+          business_stage: string | null
+          challenge_id: string | null
+          has_branding: string | null
+          role: string | null
+          services: string[] | null
+          timeline: string | null
+          website_url: string | null
         }
         Insert: {
-          about_brand: string
-          brand_category: string
+          about_brand?: string | null
+          brand_category?: string | null
           brand_name: string
           budget: string
-          city: string
+          city?: string | null
           created_at?: string
           email: string
           event_source_url?: string | null
@@ -54,13 +61,20 @@ export type Database = {
           notes?: string | null
           phone: string
           status?: string
+          business_stage?: string | null
+          challenge_id?: string | null
+          has_branding?: string | null
+          role?: string | null
+          services?: string[] | null
+          timeline?: string | null
+          website_url?: string | null
         }
         Update: {
-          about_brand?: string
-          brand_category?: string
+          about_brand?: string | null
+          brand_category?: string | null
           brand_name?: string
           budget?: string
-          city?: string
+          city?: string | null
           created_at?: string
           email?: string
           event_source_url?: string | null
@@ -74,6 +88,13 @@ export type Database = {
           notes?: string | null
           phone?: string
           status?: string
+          business_stage?: string | null
+          challenge_id?: string | null
+          has_branding?: string | null
+          role?: string | null
+          services?: string[] | null
+          timeline?: string | null
+          website_url?: string | null
         }
         Relationships: []
       }

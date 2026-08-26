@@ -60,9 +60,10 @@ export default function PrivacyPage() {
               <ul className="ml-4 list-disc space-y-1.5">
                 <li>
                   <strong>Enquiry forms</strong> — your name, phone number and
-                  email address. Our detailed enquiry form also asks for your
-                  city, brand name, brand category, a description of your
-                  brand and your budget range.
+                  email address and city. Our detailed enquiry form also asks
+                  for your company name, website, the services you need, your business
+                  stage, your role, whether you already have branding, your
+                  timeline and your budget range.
                 </li>
                 <li>
                   <strong>Event registrations</strong> — your name, phone,
