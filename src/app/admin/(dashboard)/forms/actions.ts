@@ -15,9 +15,9 @@ export async function updateFormQueryStatus(id: string, formData: FormData) {
   const status = coerceLeadStatus(formData.get("status"));
   const notes = String(formData.get("notes") ?? "");
 
-  // Fetched before the update so we can tell whether this save is the
-  // transition into "contact" — that's the point a human has actually
-  // confirmed the lead is real, not spam.
+  // Fetched before the update because the Meta event needs the identifiers
+  // captured at submission time, and because fb_lead_sent_at tells us whether
+  // this lead has already been reported.
   const { data: existing, error: fetchError } = await supabase
     .from("august_query_submissions")
     .select("status, email, phone, fbp, fbc, fb_lead_sent_at")
@@ -33,12 +33,17 @@ export async function updateFormQueryStatus(id: string, formData: FormData) {
 
   if (error) throw new Error(error.message);
 
-  // First time this lead is confirmed as a real contact, tell Meta via a
-  // separate CRM-outcome event — reusing the fbp/fbc/email/phone captured at
-  // submission so Meta matches it back to the original ad click, regardless
-  // of the gap between form-fill and follow-up. Fires once per lead, guarded
-  // by fb_lead_sent_at so re-saving later statuses doesn't refire it.
-  if (existing.status !== "contact" && status === "contact" && !existing.fb_lead_sent_at) {
+  // Once a lead is confirmed as a real contact, tell Meta via a separate
+  // CRM-outcome event, reusing the fbp/fbc/email/phone captured at submission
+  // so Meta matches it back to the original ad click regardless of the gap
+  // between form-fill and follow-up.
+  //
+  // The condition is deliberately "is at contact and hasn't been reported"
+  // rather than "is changing into contact". fb_lead_sent_at is already the
+  // only guard needed against firing twice, and keying off the transition
+  // stranded any lead that reached contact before this code existed: it could
+  // never be reported without cycling its status to something else and back.
+  if (status === "contact" && !existing.fb_lead_sent_at) {
     const sent = await sendMetaEvent({
       eventName: "QualifiedLead",
       actionSource: "system_generated",

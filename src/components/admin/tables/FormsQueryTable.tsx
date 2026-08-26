@@ -122,6 +122,27 @@ export default function FormsQueryTable({
           <span className="text-black/70">{row.original.budget}</span>
         ),
       }),
+      helper.accessor("fb_reported_status", {
+        header: "Meta",
+        cell: ({ row }) => {
+          const submission = row.original;
+          if (!submission.fb_lead_sent_at) {
+            // Not an error: nothing is reported until a lead reaches "contact".
+            return <span className="text-black/30">\u2014</span>;
+          }
+          const sent = submission.fb_reported_status === "sent";
+          return (
+            <span
+              className={sent ? "text-black/70" : "font-semibold text-lt-red"}
+              title={`QualifiedLead ${sent ? "accepted by Meta" : "rejected by Meta"} on ${new Date(
+                submission.fb_lead_sent_at
+              ).toLocaleString()}`}
+            >
+              {sent ? "Sent" : "Failed"}
+            </span>
+          );
+        },
+      }),
       helper.accessor("created_at", {
         header: "Received",
         cell: ({ row }) => (
