@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { track } from "@vercel/analytics";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { Check, ChevronDown, ChevronUp, RefreshCw } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -13,9 +12,11 @@ import {
   BUDGETS,
   BUDGET_LABELS,
   BUSINESS_STAGES,
+  FUNNEL_STEPS,
   ROLES,
   SERVICES,
   TIMELINES,
+  type FunnelStep,
 } from "@/lib/augustQuery";
 
 const TOTAL_STEPS = 9;
@@ -24,21 +25,31 @@ const AUTO_ADVANCE_MS = 260;
 const LETTERS = "ABCDEFGH";
 
 /**
- * Funnel labels, one per screen. Zero-padded so they sort into flow order in
- * the analytics dashboard rather than alphabetically. Deliberately carries no
- * answer data, only which screen was reached.
+ * Records how far someone got. Uses sendBeacon so the report survives the tab
+ * being closed, which is precisely the moment worth capturing, and falls back
+ * to a fire-and-forget fetch where sendBeacon is unavailable. Never awaited and
+ * never throws: analytics must not be able to break the form.
  */
-const STEP_LABELS = [
-  "01_services",
-  "02_stage",
-  "03_role",
-  "04_branding",
-  "05_timeline",
-  "06_budget",
-  "07_company",
-  "08_details",
-  "09_human_check",
-] as const;
+function reportStep(sessionId: string, step: FunnelStep) {
+  try {
+    const body = JSON.stringify({ sessionId, step });
+    if (navigator.sendBeacon) {
+      navigator.sendBeacon(
+        "/api/form-progress",
+        new Blob([body], { type: "application/json" })
+      );
+      return;
+    }
+    void fetch("/api/form-progress", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body,
+      keepalive: true,
+    }).catch(() => {});
+  } catch {
+    // Ignore: a missing funnel row is never worth surfacing to the user.
+  }
+}
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -157,6 +168,13 @@ export default function AugustQueryForm() {
   const firstFieldRef = useRef<HTMLInputElement>(null);
   const advanceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const trackedSteps = useRef(new Set<number>());
+  // Anonymous, per-visit, and never rendered, so the server and client
+  // generating different values is harmless.
+  const [sessionId] = useState(() =>
+    typeof crypto?.randomUUID === "function"
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random().toString(36).slice(2)}`
+  );
   const reduceMotion = useReducedMotion();
 
   const set = useCallback(
@@ -201,8 +219,8 @@ export default function AugustQueryForm() {
   useEffect(() => {
     if (trackedSteps.current.has(step)) return;
     trackedSteps.current.add(step);
-    track("form_step", { step: STEP_LABELS[step] });
-  }, [step]);
+    reportStep(sessionId, FUNNEL_STEPS[step]);
+  }, [step, sessionId]);
 
   const fetchChallenge = useCallback(async (excludeToken?: string) => {
     const url = excludeToken
@@ -339,7 +357,7 @@ export default function AugustQueryForm() {
         trackMetaPixelEventWithId("Lead", meta.eventId, {
           content_name: "August Query Form",
         });
-        track("form_submitted");
+        reportStep(sessionId, "submitted");
         setSubmitted(true);
       } else if (res.status === 422) {
         const body = await res.json().catch(() => null);
@@ -352,7 +370,7 @@ export default function AugustQueryForm() {
           // Counted separately from a plain drop-off: people bouncing off the
           // trivia gate means the filter is too tight, not that the form is
           // too long.
-          track("form_challenge_failed");
+          reportStep(sessionId, "challenge_failed");
           setChallengeError("Not quite. Try again, or refresh for a different question.");
         }
       } else {
@@ -363,7 +381,7 @@ export default function AugustQueryForm() {
     } finally {
       setSubmitting(false);
     }
-  }, [stepValid, challenge, submitting, data, challengeAnswer, swapChallenge]);
+  }, [stepValid, challenge, submitting, data, challengeAnswer, swapChallenge, sessionId]);
 
   const advance = useCallback(() => {
     if (!stepValid) return;

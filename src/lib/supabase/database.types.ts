@@ -477,6 +477,27 @@ export type Database = {
         }
         Relationships: []
       }
+      form_funnel_events: {
+        Row: {
+          created_at: string
+          id: string
+          session_id: string
+          step: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          session_id: string
+          step: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          session_id?: string
+          step?: string
+        }
+        Relationships: []
+      }
       newsletter_subscribers: {
         Row: {
           created_at: string

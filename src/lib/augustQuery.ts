@@ -55,3 +55,24 @@ export type Role = (typeof ROLES)[number];
 export type BrandingState = (typeof BRANDING_STATES)[number];
 export type Timeline = (typeof TIMELINES)[number];
 export type Budget = (typeof BUDGETS)[number];
+
+/**
+ * Funnel labels, one per screen plus the two outcomes. Zero-padded so a plain
+ * `order by step` reads in flow order. Shared with the progress route so the
+ * client cannot record a step the server does not recognise.
+ */
+export const FUNNEL_STEPS = [
+  "01_services",
+  "02_stage",
+  "03_role",
+  "04_branding",
+  "05_timeline",
+  "06_budget",
+  "07_company",
+  "08_details",
+  "09_human_check",
+  "submitted",
+  "challenge_failed",
+] as const;
+
+export type FunnelStep = (typeof FUNNEL_STEPS)[number];
