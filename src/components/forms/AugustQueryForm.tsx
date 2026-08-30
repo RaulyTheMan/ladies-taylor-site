@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { track } from "@vercel/analytics";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { Check, ChevronDown, ChevronUp, RefreshCw } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -21,6 +22,23 @@ const TOTAL_STEPS = 9;
 const ALL_SERVICES = "All of the above";
 const AUTO_ADVANCE_MS = 260;
 const LETTERS = "ABCDEFGH";
+
+/**
+ * Funnel labels, one per screen. Zero-padded so they sort into flow order in
+ * the analytics dashboard rather than alphabetically. Deliberately carries no
+ * answer data, only which screen was reached.
+ */
+const STEP_LABELS = [
+  "01_services",
+  "02_stage",
+  "03_role",
+  "04_branding",
+  "05_timeline",
+  "06_budget",
+  "07_company",
+  "08_details",
+  "09_human_check",
+] as const;
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -138,6 +156,7 @@ export default function AugustQueryForm() {
 
   const firstFieldRef = useRef<HTMLInputElement>(null);
   const advanceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const trackedSteps = useRef(new Set<number>());
   const reduceMotion = useReducedMotion();
 
   const set = useCallback(
@@ -175,6 +194,15 @@ export default function AugustQueryForm() {
         return false;
     }
   }, [step, data, challengeAnswer, challenge]);
+
+  // Records the furthest point each visitor reached, so drop-off is visible
+  // per question instead of only "submitted or not". Fires once per screen:
+  // navigating back and forward again must not count twice.
+  useEffect(() => {
+    if (trackedSteps.current.has(step)) return;
+    trackedSteps.current.add(step);
+    track("form_step", { step: STEP_LABELS[step] });
+  }, [step]);
 
   const fetchChallenge = useCallback(async (excludeToken?: string) => {
     const url = excludeToken
@@ -311,6 +339,7 @@ export default function AugustQueryForm() {
         trackMetaPixelEventWithId("Lead", meta.eventId, {
           content_name: "August Query Form",
         });
+        track("form_submitted");
         setSubmitted(true);
       } else if (res.status === 422) {
         const body = await res.json().catch(() => null);
@@ -320,6 +349,10 @@ export default function AugustQueryForm() {
           setChallengeError("That question timed out. Here's a new one.");
           void swapChallenge(challenge.token);
         } else {
+          // Counted separately from a plain drop-off: people bouncing off the
+          // trivia gate means the filter is too tight, not that the form is
+          // too long.
+          track("form_challenge_failed");
           setChallengeError("Not quite. Try again, or refresh for a different question.");
         }
       } else {
