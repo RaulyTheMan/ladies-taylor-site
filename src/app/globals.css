@@ -54,71 +54,11 @@
   --font-display: var(--font-display);
   --font-gothic: var(--font-gothic);
   --font-body: var(--font-body);
-
-  /* ---------------------------------------------------------------------
-     Admin studio palette. Namespaced `admin-` so it can never collide with
-     the `lt-*` brand tokens above — the admin is a tool, not a brand
-     surface, and the two are meant to look nothing alike.
-
-     Black, white, two greys, one accent. Yellow is the brand's own #ffce00
-     but it is only ever a FILL behind black text: as text on white it
-     measures 1.49:1 and fails AA outright, while black on top of it is
-     13.3:1. --color-admin-muted is the floor for informational text at
-     5.33:1 on white / 5.11:1 on --color-admin-surface.
-
-     --color-admin-border is decorative (cards, dividers) and has no contrast
-     requirement. --color-admin-border-strong draws CONTROL boundaries —
-     inputs, selects, secondary buttons — so it has to clear 3:1 against both
-     white and the surface grey under WCAG 2.1 SC 1.4.11: it measures 3.23:1
-     and 3.10:1. It cannot be lightened for looks without breaking that.
-     --------------------------------------------------------------------- */
-  --color-admin-bg: #ffffff;
-  --color-admin-surface: #fafafa;
-  --color-admin-surface-hover: #f2f2f2;
-  --color-admin-fg: #0a0a0a;
-  --color-admin-muted: #6b6b6b;
-  --color-admin-border: #e6e6e6;
-  --color-admin-border-strong: #8f8f8f;
-  --color-admin-accent: #ffce00;
-  --color-admin-danger: #d40000;
-  --color-admin-danger-surface: #fff1f1;
-
-  /* Small, flat radii. The old admin's full-round pills and 20px cards are
-     what made it read as marketing chrome rather than an editing tool. */
-  --radius-admin-sm: 4px;
-  --radius-admin-md: 6px;
-  --radius-admin-lg: 10px;
 }
 
 body {
   background: var(--color-lt-yellow);
   color: var(--foreground);
-}
-
-/* Undoes what the admin would otherwise inherit from the marketing root
-   layout: the yellow page background, and the -0.05em tracking that .font-body
-   sets below. That tracking is a brand voice decision and a large part of why
-   the admin used to feel like the front end at a glance. */
-.admin-root {
-  background: var(--color-admin-bg);
-  color: var(--color-admin-fg);
-  font-family: var(--font-body);
-  letter-spacing: normal;
-
-  /* <body> is a yellow flex column from the marketing root layout. Growing to
-     fill it stops that yellow showing beneath the studio on any page whose
-     content runs past one viewport. */
-  flex: 1 0 auto;
-
-  /* Density. 13px base / 12px labels / 32px controls is the difference
-     between "a website" and "something you work in all day". */
-  --admin-control-height: 32px;
-  --admin-control-height-sm: 26px;
-  font-size: 13px;
-}
-
-.admin-root :is(h1, h2, h3, h4, h5, h6) {
-  letter-spacing: normal;
 }
 
 /* The recurring "comic" hard-shadow outline used on buttons, cards & windows */

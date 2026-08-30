@@ -10,11 +10,11 @@ import {
   Tags,
   CalendarDays,
   Image as ImageIcon,
-  Mail,
-  ExternalLink,
+  Inbox,
+  ClipboardList,
 } from "lucide-react";
 import { logout } from "@/app/admin/login/actions";
-import { ADMIN_NAV_ITEMS, ADMIN_CRM_URL, type AdminNavIconKey } from "@/lib/admin/nav";
+import { ADMIN_NAV_ITEMS, type AdminNavIconKey } from "@/lib/admin/nav";
 import { ADMIN_FOCUS_RING_CLASS, ADMIN_SIDEBAR_BG_CLASS } from "@/lib/admin/ui";
 import Toast from "@/components/admin/Toast";
 
@@ -25,7 +25,8 @@ const NAV_ICONS: Record<AdminNavIconKey, React.ComponentType<{ className?: strin
   brands: Tags,
   events: CalendarDays,
   media: ImageIcon,
-  subscribers: Mail,
+  leads: Inbox,
+  forms: ClipboardList,
 };
 
 function NavRow({
@@ -137,19 +138,7 @@ export default function AdminShell({
         })}
       </nav>
 
-      <a
-        href={ADMIN_CRM_URL}
-        target="_blank"
-        rel="noreferrer noopener"
-        className={`mt-auto flex items-center gap-2 rounded-full px-3 py-2.5 text-sm font-bold text-black/60 transition-colors hover:bg-black/5 hover:text-black ${ADMIN_FOCUS_RING_CLASS}`}
-      >
-        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-black/20">
-          <ExternalLink className="h-3.5 w-3.5" />
-        </span>
-        Leads &amp; CRM
-      </a>
-
-      <form action={logout} className="px-2 pt-4">
+      <form action={logout} className="mt-auto px-2 pt-8">
         <button
           type="submit"
           className={`rounded px-1 py-2 text-xs font-medium text-black/60 hover:text-black ${ADMIN_FOCUS_RING_CLASS}`}

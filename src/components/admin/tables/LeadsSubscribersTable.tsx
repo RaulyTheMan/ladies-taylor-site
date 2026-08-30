@@ -10,7 +10,7 @@ type SubscriberRow = Tables<"newsletter_subscribers">;
 
 const helper = createColumnHelper<typeof adminTableFeatures, SubscriberRow>();
 
-export default function SubscribersTable({
+export default function LeadsSubscribersTable({
   subscribers,
   emptyMessage,
 }: {
