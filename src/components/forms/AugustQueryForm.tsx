@@ -10,14 +10,12 @@ import { captureMetaSignals, trackMetaPixelEventWithId } from "@/lib/metaPixel";
 import {
   BUDGETS,
   BUDGET_LABELS,
-  BUSINESS_STAGES,
   FUNNEL_STEPS,
   SERVICES,
-  TIMELINES,
   type FunnelStep,
 } from "@/lib/augustQuery";
 
-const TOTAL_STEPS = 6;
+const TOTAL_STEPS = 4;
 const ALL_SERVICES = "All of the above";
 const AUTO_ADVANCE_MS = 260;
 const LETTERS = "ABCDEFGH";
@@ -51,8 +49,6 @@ function reportStep(sessionId: string, step: FunnelStep) {
 
 type FormState = {
   services: string[];
-  businessStage: string;
-  timeline: string;
   budget: string;
   companyName: string;
   aboutCompany: string;
@@ -63,8 +59,6 @@ type FormState = {
 
 const EMPTY_STATE: FormState = {
   services: [],
-  businessStage: "",
-  timeline: "",
   budget: "",
   companyName: "",
   aboutCompany: "",
@@ -181,12 +175,8 @@ export default function AugustQueryForm() {
       case 1:
         return data.services.length > 0;
       case 2:
-        return data.businessStage.length > 0;
-      case 3:
-        return data.timeline.length > 0;
-      case 4:
         return data.budget.length > 0;
-      case 5:
+      case 3:
         return (
           data.name.trim().length > 0 &&
           data.phone.trim().length > 0 &&
@@ -320,8 +310,6 @@ export default function AugustQueryForm() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           services: data.services,
-          businessStage: data.businessStage,
-          timeline: data.timeline,
           budget: data.budget,
           companyName: data.companyName,
           name: data.name,
@@ -443,9 +431,7 @@ export default function AugustQueryForm() {
       if (step === 1 && index < SERVICES.length) {
         event.preventDefault();
         toggleService(SERVICES[index]);
-      } else if (step === 2) pick(BUSINESS_STAGES, "businessStage");
-      else if (step === 3) pick(TIMELINES, "timeline");
-      else if (step === 4) pick(BUDGETS, "budget");
+      } else if (step === 2) pick(BUDGETS, "budget");
     }
 
     window.addEventListener("keydown", onKeyDown);
@@ -587,20 +573,6 @@ export default function AugustQueryForm() {
       case 2:
         return (
           <>
-            <QuestionHead step={step} question="What stage is your business at?" />
-            {renderChoices(BUSINESS_STAGES, data.businessStage, "businessStage")}
-          </>
-        );
-      case 3:
-        return (
-          <>
-            <QuestionHead step={step} question="When do you need this done by?" />
-            {renderChoices(TIMELINES, data.timeline, "timeline")}
-          </>
-        );
-      case 4:
-        return (
-          <>
             <QuestionHead step={step} question="What's your budget?" />
             {renderChoices(
               BUDGETS,
@@ -610,7 +582,7 @@ export default function AugustQueryForm() {
             )}
           </>
         );
-      case 5:
+      case 3:
         return (
           <>
             <QuestionHead

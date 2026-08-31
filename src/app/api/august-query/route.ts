@@ -10,12 +10,10 @@ import {
   markChallengeTokenUsed,
   matchesAnswer,
 } from "@/lib/formChallenge";
-import { BUDGETS, BUSINESS_STAGES, SERVICES, TIMELINES } from "@/lib/augustQuery";
+import { BUDGETS, SERVICES } from "@/lib/augustQuery";
 
 const querySchema = z.object({
   services: z.array(z.enum(SERVICES)).min(1).max(SERVICES.length),
-  businessStage: z.enum(BUSINESS_STAGES),
-  timeline: z.enum(TIMELINES),
   budget: z.enum(BUDGETS),
   companyName: z.string().trim().min(1).max(200),
   name: z.string().trim().min(1).max(200),
@@ -55,8 +53,6 @@ export async function POST(request: Request) {
 
   const {
     services,
-    businessStage,
-    timeline,
     budget,
     companyName,
     name,
@@ -104,8 +100,6 @@ export async function POST(request: Request) {
     // Reuses the old free-text column rather than adding a near-duplicate.
     about_brand: aboutCompany || null,
     services,
-    business_stage: businessStage,
-    timeline,
     budget,
     challenge_id: verdict.id,
     fbp: meta?.fbp ?? null,

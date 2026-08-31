@@ -13,20 +13,6 @@ export const SERVICES = [
   "All of the above",
 ] as const;
 
-export const BUSINESS_STAGES = [
-  "New Business",
-  "Existing brand needing a refresh",
-  "Rebrand after a name change",
-  "Legacy Business",
-] as const;
-
-export const TIMELINES = [
-  "1-2 Weeks",
-  "2-4 Weeks",
-  "4-6 Weeks",
-  "Long Term",
-] as const;
-
 export const BUDGETS = ["50k - 75k", "75k - 1L", "1L - 2L", "3L+"] as const;
 
 /**
@@ -41,8 +27,6 @@ export const BUDGET_LABELS: Record<(typeof BUDGETS)[number], string> = {
 };
 
 export type Service = (typeof SERVICES)[number];
-export type BusinessStage = (typeof BUSINESS_STAGES)[number];
-export type Timeline = (typeof TIMELINES)[number];
 export type Budget = (typeof BUDGETS)[number];
 
 /**
@@ -53,10 +37,8 @@ export type Budget = (typeof BUDGETS)[number];
 export const FUNNEL_STEPS = [
   "01_human_check",
   "02_services",
-  "03_stage",
-  "04_timeline",
-  "05_budget",
-  "06_details",
+  "03_budget",
+  "04_details",
   "submitted",
   "challenge_failed",
 ] as const;
