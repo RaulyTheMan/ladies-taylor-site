@@ -28,13 +28,18 @@ export default function FormsQueryTable({
           <span className="font-medium text-black">{row.original.name}</span>
         ),
       }),
-      helper.accessor("email", {
+      helper.accessor("phone", {
         header: "Contact",
         cell: ({ row }) => (
           <span className="text-black/70">
             {row.original.phone}
-            <br />
-            {row.original.email}
+            {/* Pre-Sept rows have an email; the shortened form no longer asks. */}
+            {row.original.email && (
+              <>
+                <br />
+                {row.original.email}
+              </>
+            )}
           </span>
         ),
       }),

@@ -22,7 +22,7 @@ export type Database = {
           budget: string
           city: string | null
           created_at: string
-          email: string
+          email: string | null
           event_source_url: string | null
           fb_event_id: string | null
           fb_lead_sent_at: string | null
@@ -49,7 +49,7 @@ export type Database = {
           budget: string
           city?: string | null
           created_at?: string
-          email: string
+          email?: string | null
           event_source_url?: string | null
           fb_event_id?: string | null
           fb_lead_sent_at?: string | null
@@ -76,7 +76,7 @@ export type Database = {
           budget?: string
           city?: string | null
           created_at?: string
-          email?: string
+          email?: string | null
           event_source_url?: string | null
           fb_event_id?: string | null
           fb_lead_sent_at?: string | null

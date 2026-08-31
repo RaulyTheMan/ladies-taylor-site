@@ -8,18 +8,16 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { PRIMARY_BUTTON_CLASS } from "@/lib/ui";
 import { captureMetaSignals, trackMetaPixelEventWithId } from "@/lib/metaPixel";
 import {
-  BRANDING_STATES,
   BUDGETS,
   BUDGET_LABELS,
   BUSINESS_STAGES,
   FUNNEL_STEPS,
-  ROLES,
   SERVICES,
   TIMELINES,
   type FunnelStep,
 } from "@/lib/augustQuery";
 
-const TOTAL_STEPS = 9;
+const TOTAL_STEPS = 6;
 const ALL_SERVICES = "All of the above";
 const AUTO_ADVANCE_MS = 260;
 const LETTERS = "ABCDEFGH";
@@ -51,35 +49,27 @@ function reportStep(sessionId: string, step: FunnelStep) {
   }
 }
 
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
 type FormState = {
   services: string[];
   businessStage: string;
-  role: string;
-  hasBranding: string;
   timeline: string;
   budget: string;
   companyName: string;
-  websiteUrl: string;
+  aboutCompany: string;
   name: string;
   phone: string;
-  email: string;
   city: string;
 };
 
 const EMPTY_STATE: FormState = {
   services: [],
   businessStage: "",
-  role: "",
-  hasBranding: "",
   timeline: "",
   budget: "",
   companyName: "",
-  websiteUrl: "",
+  aboutCompany: "",
   name: "",
   phone: "",
-  email: "",
   city: "",
 };
 
@@ -164,6 +154,7 @@ export default function AugustQueryForm() {
   const [challengeAnswer, setChallengeAnswer] = useState("");
   const [challengeError, setChallengeError] = useState<string | null>(null);
   const [challengeLoading, setChallengeLoading] = useState(false);
+  const [verifying, setVerifying] = useState(false);
 
   const firstFieldRef = useRef<HTMLInputElement>(null);
   const advanceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -186,28 +177,22 @@ export default function AugustQueryForm() {
   const stepValid = useMemo(() => {
     switch (step) {
       case 0:
-        return data.services.length > 0;
+        return challengeAnswer.trim().length > 0 && challenge !== null;
       case 1:
-        return data.businessStage.length > 0;
+        return data.services.length > 0;
       case 2:
-        return data.role.length > 0;
+        return data.businessStage.length > 0;
       case 3:
-        return data.hasBranding.length > 0;
-      case 4:
         return data.timeline.length > 0;
-      case 5:
+      case 4:
         return data.budget.length > 0;
-      case 6:
-        return data.companyName.trim().length > 0;
-      case 7:
+      case 5:
         return (
           data.name.trim().length > 0 &&
           data.phone.trim().length > 0 &&
           data.city.trim().length > 0 &&
-          EMAIL_PATTERN.test(data.email.trim())
+          data.companyName.trim().length > 0
         );
-      case 8:
-        return challengeAnswer.trim().length > 0 && challenge !== null;
       default:
         return false;
     }
@@ -336,16 +321,13 @@ export default function AugustQueryForm() {
         body: JSON.stringify({
           services: data.services,
           businessStage: data.businessStage,
-          role: data.role,
-          hasBranding: data.hasBranding,
           timeline: data.timeline,
           budget: data.budget,
           companyName: data.companyName,
-          websiteUrl: data.websiteUrl || undefined,
           name: data.name,
           phone: data.phone,
-          email: data.email,
           city: data.city,
+          aboutCompany: data.aboutCompany || undefined,
           challengeToken: challenge.token,
           challengeAnswer,
           meta,
@@ -373,6 +355,10 @@ export default function AugustQueryForm() {
           reportStep(sessionId, "challenge_failed");
           setChallengeError("Not quite. Try again, or refresh for a different question.");
         }
+        // The gate lives on the first screen, so send them back to it rather
+        // than showing an error beside a question that isn't on screen.
+        setDirection(-1);
+        setStep(0);
       } else {
         setError(true);
       }
@@ -383,14 +369,50 @@ export default function AugustQueryForm() {
     }
   }, [stepValid, challenge, submitting, data, challengeAnswer, swapChallenge, sessionId]);
 
+  /**
+   * Checks the gate answer before moving on. A network failure lets them
+   * through rather than blocking a real person: the submit route re-checks it
+   * anyway, so the worst case is finding out later instead of now.
+   */
+  const verifyGate = useCallback(async () => {
+    if (!challenge || verifying) return;
+    setVerifying(true);
+    setChallengeError(null);
+    try {
+      const res = await fetch("/api/form-challenge", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token: challenge.token, answer: challengeAnswer }),
+      });
+      const body = await res.json().catch(() => null);
+      if (body?.ok) {
+        goNext();
+      } else if (body?.error === "expired") {
+        setChallengeError("That question timed out. Here's a new one.");
+        void swapChallenge(challenge.token);
+      } else {
+        reportStep(sessionId, "challenge_failed");
+        setChallengeError("Not quite. Try again, or refresh for a different question.");
+      }
+    } catch {
+      goNext();
+    } finally {
+      setVerifying(false);
+    }
+  }, [challenge, verifying, challengeAnswer, goNext, swapChallenge, sessionId]);
+
   const advance = useCallback(() => {
     if (!stepValid) return;
     if (step === TOTAL_STEPS - 1) {
       void handleSubmit();
       return;
     }
+    if (step === 0) {
+      void verifyGate();
+      return;
+    }
     goNext();
-  }, [stepValid, step, handleSubmit, goNext]);
+  }, [stepValid, step, handleSubmit, goNext, verifyGate]);
 
   // Keyboard: Enter advances, Shift+Enter goes back, letters pick an option.
   useEffect(() => {
@@ -418,14 +440,12 @@ export default function AugustQueryForm() {
         selectAndAdvance(key, options[index] as never);
       };
 
-      if (step === 0 && index < SERVICES.length) {
+      if (step === 1 && index < SERVICES.length) {
         event.preventDefault();
         toggleService(SERVICES[index]);
-      } else if (step === 1) pick(BUSINESS_STAGES, "businessStage");
-      else if (step === 2) pick(ROLES, "role");
-      else if (step === 3) pick(BRANDING_STATES, "hasBranding");
-      else if (step === 4) pick(TIMELINES, "timeline");
-      else if (step === 5) pick(BUDGETS, "budget");
+      } else if (step === 2) pick(BUSINESS_STAGES, "businessStage");
+      else if (step === 3) pick(TIMELINES, "timeline");
+      else if (step === 4) pick(BUDGETS, "budget");
     }
 
     window.addEventListener("keydown", onKeyDown);
@@ -497,176 +517,15 @@ export default function AugustQueryForm() {
 
   function renderStep() {
     switch (step) {
+      // The gate goes first on purpose. It is the only screen a willing person
+      // can fail, so failing it should cost them nothing they have already done.
       case 0:
         return (
           <>
             <QuestionHead
               step={step}
-              question="What do you need help with?"
-              helper="Pick as many as apply."
-            />
-            <div className="mt-8 flex flex-col gap-2.5">
-              {SERVICES.map((service, i) => (
-                <ChoiceRow
-                  key={service}
-                  letter={LETTERS[i]}
-                  label={service}
-                  selected={data.services.includes(service)}
-                  multi
-                  onSelect={() => toggleService(service)}
-                />
-              ))}
-            </div>
-            <ContinueRow />
-          </>
-        );
-      case 1:
-        return (
-          <>
-            <QuestionHead step={step} question="What stage is your business at?" />
-            {renderChoices(BUSINESS_STAGES, data.businessStage, "businessStage")}
-          </>
-        );
-      case 2:
-        return (
-          <>
-            <QuestionHead step={step} question="What best describes your role?" />
-            {renderChoices(ROLES, data.role, "role")}
-          </>
-        );
-      case 3:
-        return (
-          <>
-            <QuestionHead
-              step={step}
-              question="Do you already have a logo or brand guidelines?"
-            />
-            {renderChoices(BRANDING_STATES, data.hasBranding, "hasBranding")}
-          </>
-        );
-      case 4:
-        return (
-          <>
-            <QuestionHead step={step} question="When do you need this done by?" />
-            {renderChoices(TIMELINES, data.timeline, "timeline")}
-          </>
-        );
-      case 5:
-        return (
-          <>
-            <QuestionHead step={step} question="What's your budget?" />
-            {renderChoices(
-              BUDGETS,
-              data.budget,
-              "budget",
-              (option) => BUDGET_LABELS[option as keyof typeof BUDGET_LABELS]
-            )}
-          </>
-        );
-      case 6:
-        return (
-          <>
-            <div className="flex items-start justify-between gap-4">
-              <QuestionHead step={step} question="Tell us about the company." />
-              <button
-                type="button"
-                onClick={() => {
-                  set("websiteUrl", "");
-                  if (data.companyName.trim().length > 0) goNext();
-                }}
-                className="shrink-0 text-xs text-black/40 underline hover:text-black"
-              >
-                I don&rsquo;t have a website
-              </button>
-            </div>
-            <div className="mt-6 flex flex-col gap-5 md:mt-8 md:gap-6">
-              <label className="block">
-                <span className={labelClass}>Company Name</span>
-                <input
-                  ref={firstFieldRef}
-                  type="text"
-                  value={data.companyName}
-                  onChange={(e) => set("companyName", e.target.value)}
-                  placeholder="Type your answer here..."
-                  className={inputClass}
-                />
-              </label>
-              <label className="block">
-                <span className={labelClass}>Website URL (optional)</span>
-                <input
-                  type="text"
-                  inputMode="url"
-                  value={data.websiteUrl}
-                  onChange={(e) => set("websiteUrl", e.target.value)}
-                  placeholder="yourbrand.com"
-                  className={inputClass}
-                />
-              </label>
-            </div>
-            <ContinueRow />
-          </>
-        );
-      case 7:
-        return (
-          <>
-            <QuestionHead
-              step={step}
-              question="Last bit. Who are you?"
-              helper="So we know who to get back to."
-            />
-            <div className="mt-6 flex flex-col gap-5 md:mt-8 md:gap-6">
-              <label className="block">
-                <span className={labelClass}>Your Name</span>
-                <input
-                  ref={firstFieldRef}
-                  type="text"
-                  value={data.name}
-                  onChange={(e) => set("name", e.target.value)}
-                  placeholder="Full name"
-                  className={inputClass}
-                />
-              </label>
-              <label className="block">
-                <span className={labelClass}>Email</span>
-                <input
-                  type="email"
-                  value={data.email}
-                  onChange={(e) => set("email", e.target.value)}
-                  placeholder="your@email.com"
-                  className={inputClass}
-                />
-              </label>
-              <label className="block">
-                <span className={labelClass}>Phone</span>
-                <input
-                  type="tel"
-                  value={data.phone}
-                  onChange={(e) => set("phone", e.target.value)}
-                  placeholder="(+91) Phone number"
-                  className={inputClass}
-                />
-              </label>
-              <label className="block">
-                <span className={labelClass}>City</span>
-                <input
-                  type="text"
-                  value={data.city}
-                  onChange={(e) => set("city", e.target.value)}
-                  placeholder="Where are you based?"
-                  className={inputClass}
-                />
-              </label>
-            </div>
-            <ContinueRow />
-          </>
-        );
-      case 8:
-        return (
-          <>
-            <QuestionHead
-              step={step}
               question={challenge?.prompt ?? "Loading a question..."}
-              helper="Bots keep filling this form, so prove you're not one. Refresh for a different question if this one's no good."
+              helper="Quick check that you're a person. Refresh for a different question if this one's no good."
             />
             <div className="mt-8">
               <input
@@ -695,6 +554,122 @@ export default function AugustQueryForm() {
               {challengeError && (
                 <p className="mt-3 text-sm font-semibold text-lt-red">{challengeError}</p>
               )}
+            </div>
+            <ContinueRow
+              label={verifying ? "Checking..." : "Continue"}
+              disabled={!stepValid || verifying}
+            />
+          </>
+        );
+      case 1:
+        return (
+          <>
+            <QuestionHead
+              step={step}
+              question="What do you need help with?"
+              helper="Pick as many as apply."
+            />
+            <div className="mt-8 flex flex-col gap-2.5">
+              {SERVICES.map((service, i) => (
+                <ChoiceRow
+                  key={service}
+                  letter={LETTERS[i]}
+                  label={service}
+                  selected={data.services.includes(service)}
+                  multi
+                  onSelect={() => toggleService(service)}
+                />
+              ))}
+            </div>
+            <ContinueRow />
+          </>
+        );
+      case 2:
+        return (
+          <>
+            <QuestionHead step={step} question="What stage is your business at?" />
+            {renderChoices(BUSINESS_STAGES, data.businessStage, "businessStage")}
+          </>
+        );
+      case 3:
+        return (
+          <>
+            <QuestionHead step={step} question="When do you need this done by?" />
+            {renderChoices(TIMELINES, data.timeline, "timeline")}
+          </>
+        );
+      case 4:
+        return (
+          <>
+            <QuestionHead step={step} question="What's your budget?" />
+            {renderChoices(
+              BUDGETS,
+              data.budget,
+              "budget",
+              (option) => BUDGET_LABELS[option as keyof typeof BUDGET_LABELS]
+            )}
+          </>
+        );
+      case 5:
+        return (
+          <>
+            <QuestionHead
+              step={step}
+              question="Last bit. Who are you?"
+              helper="So we know who to get back to."
+            />
+            <div className="mt-6 flex flex-col gap-5 md:mt-8 md:gap-6">
+              <label className="block">
+                <span className={labelClass}>Your Name</span>
+                <input
+                  ref={firstFieldRef}
+                  type="text"
+                  value={data.name}
+                  onChange={(e) => set("name", e.target.value)}
+                  placeholder="Full name"
+                  className={inputClass}
+                />
+              </label>
+              <label className="block">
+                <span className={labelClass}>Number</span>
+                <input
+                  type="tel"
+                  value={data.phone}
+                  onChange={(e) => set("phone", e.target.value)}
+                  placeholder="(+91) Phone number"
+                  className={inputClass}
+                />
+              </label>
+              <label className="block">
+                <span className={labelClass}>City</span>
+                <input
+                  type="text"
+                  value={data.city}
+                  onChange={(e) => set("city", e.target.value)}
+                  placeholder="Where are you based?"
+                  className={inputClass}
+                />
+              </label>
+              <label className="block">
+                <span className={labelClass}>Company Name</span>
+                <input
+                  type="text"
+                  value={data.companyName}
+                  onChange={(e) => set("companyName", e.target.value)}
+                  placeholder="Company name"
+                  className={inputClass}
+                />
+              </label>
+              <label className="block">
+                <span className={labelClass}>About the company (optional)</span>
+                <textarea
+                  value={data.aboutCompany}
+                  onChange={(e) => set("aboutCompany", e.target.value)}
+                  placeholder="Anything that helps us understand what you do."
+                  rows={3}
+                  className={`${inputClass} resize-none`}
+                />
+              </label>
             </div>
             {error && (
               <p className="mt-4 text-sm font-semibold text-lt-red">
@@ -786,7 +761,10 @@ export default function AugustQueryForm() {
                 // change instead would focus the *outgoing* field, which is
                 // still mounted while AnimatePresence waits for its exit.
                 onAnimationComplete={() => {
-                  if (step >= 6) firstFieldRef.current?.focus();
+                  // The gate and the details screen are the text ones.
+                  if (step === 0 || step === TOTAL_STEPS - 1) {
+                    firstFieldRef.current?.focus();
+                  }
                 }}
               >
                 {renderStep()}

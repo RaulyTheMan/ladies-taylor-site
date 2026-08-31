@@ -10,28 +10,18 @@ import {
   markChallengeTokenUsed,
   matchesAnswer,
 } from "@/lib/formChallenge";
-import {
-  BRANDING_STATES,
-  BUDGETS,
-  BUSINESS_STAGES,
-  ROLES,
-  SERVICES,
-  TIMELINES,
-} from "@/lib/augustQuery";
+import { BUDGETS, BUSINESS_STAGES, SERVICES, TIMELINES } from "@/lib/augustQuery";
 
 const querySchema = z.object({
   services: z.array(z.enum(SERVICES)).min(1).max(SERVICES.length),
   businessStage: z.enum(BUSINESS_STAGES),
-  role: z.enum(ROLES),
-  hasBranding: z.enum(BRANDING_STATES),
   timeline: z.enum(TIMELINES),
   budget: z.enum(BUDGETS),
   companyName: z.string().trim().min(1).max(200),
-  websiteUrl: z.string().trim().max(300).optional(),
   name: z.string().trim().min(1).max(200),
   phone: z.string().trim().min(1).max(50),
-  email: z.string().trim().email().max(200),
   city: z.string().trim().min(1).max(120),
+  aboutCompany: z.string().trim().max(2000).optional(),
   challengeToken: z.string().min(1).max(500),
   challengeAnswer: z.string().trim().min(1).max(200),
   // Optional so a submission still succeeds if the browser blocked the pixel.
@@ -66,16 +56,13 @@ export async function POST(request: Request) {
   const {
     services,
     businessStage,
-    role,
-    hasBranding,
     timeline,
     budget,
     companyName,
-    websiteUrl,
     name,
     phone,
-    email,
     city,
+    aboutCompany,
     challengeToken,
     challengeAnswer,
     meta,
@@ -111,15 +98,13 @@ export async function POST(request: Request) {
   const { error } = await supabase.from("august_query_submissions").insert({
     name,
     phone,
-    email,
     city,
-    // The company they're enquiring for — same column the old form filled.
+    // The company they're enquiring for, same column the old form filled.
     brand_name: companyName,
-    website_url: websiteUrl || null,
+    // Reuses the old free-text column rather than adding a near-duplicate.
+    about_brand: aboutCompany || null,
     services,
     business_stage: businessStage,
-    role,
-    has_branding: hasBranding,
     timeline,
     budget,
     challenge_id: verdict.id,
@@ -152,7 +137,8 @@ export async function POST(request: Request) {
     actionSource: "website",
     customData: { content_name: "August Query Form", lead_source: "august_query" },
     userData: {
-      email,
+      // The form no longer collects email, so phone is the match key. Meta
+      // accepts a partial user_data; match quality is just lower without it.
       phone,
       fbp: meta?.fbp,
       fbc: meta?.fbc,

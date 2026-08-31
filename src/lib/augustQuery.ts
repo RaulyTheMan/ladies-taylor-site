@@ -20,15 +20,6 @@ export const BUSINESS_STAGES = [
   "Legacy Business",
 ] as const;
 
-export const ROLES = [
-  "Marketing Manager",
-  "Business Owner",
-  "CXO",
-  "Other",
-] as const;
-
-export const BRANDING_STATES = ["Yes", "No", "Somewhat"] as const;
-
 export const TIMELINES = [
   "1-2 Weeks",
   "2-4 Weeks",
@@ -51,8 +42,6 @@ export const BUDGET_LABELS: Record<(typeof BUDGETS)[number], string> = {
 
 export type Service = (typeof SERVICES)[number];
 export type BusinessStage = (typeof BUSINESS_STAGES)[number];
-export type Role = (typeof ROLES)[number];
-export type BrandingState = (typeof BRANDING_STATES)[number];
 export type Timeline = (typeof TIMELINES)[number];
 export type Budget = (typeof BUDGETS)[number];
 
@@ -62,15 +51,12 @@ export type Budget = (typeof BUDGETS)[number];
  * client cannot record a step the server does not recognise.
  */
 export const FUNNEL_STEPS = [
-  "01_services",
-  "02_stage",
-  "03_role",
-  "04_branding",
-  "05_timeline",
-  "06_budget",
-  "07_company",
-  "08_details",
-  "09_human_check",
+  "01_human_check",
+  "02_services",
+  "03_stage",
+  "04_timeline",
+  "05_budget",
+  "06_details",
   "submitted",
   "challenge_failed",
 ] as const;
