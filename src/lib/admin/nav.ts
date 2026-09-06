@@ -10,8 +10,7 @@ export type AdminNavIconKey =
   | "brands"
   | "events"
   | "media"
-  | "leads"
-  | "forms";
+  | "subscribers";
 
 export type AdminNavItem = {
   label: string;
@@ -35,6 +34,13 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
   { label: "Brands", href: "/admin/brands", iconKey: "brands" },
   { label: "Events", href: "/admin/events", iconKey: "events" },
   { label: "Media", href: "/admin/media", iconKey: "media" },
-  { label: "Leads", href: "/admin/leads", iconKey: "leads" },
-  { label: "Forms", href: "/admin/forms", iconKey: "forms" },
+  { label: "Subscribers", href: "/admin/subscribers", iconKey: "subscribers" },
 ];
+
+/**
+ * The sales pipeline lives in the standalone CRM, not here. This admin is
+ * website content only — contact and August-query submissions are still
+ * collected by src/app/api/{contact,august-query} and worked over there, so
+ * the two systems can't drift apart the way they did when both had a UI.
+ */
+export const ADMIN_CRM_URL = "https://leads.ladiestaylor.com";
