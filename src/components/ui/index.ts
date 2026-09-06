@@ -2,7 +2,7 @@ export { default as Button, IconButton, buttonClasses } from "./Button";
 export { default as Badge } from "./Badge";
 export { default as Card, Panel, EmptyState } from "./Card";
 export { default as DataTable } from "./DataTable";
-export { default as PageHeader, type Crumb } from "./PageHeader";
+export { default as PageHeader } from "./PageHeader";
 export {
   Field,
   TextInput,
@@ -21,3 +21,4 @@ export {
   MenuLabel,
 } from "./Menu";
 export { FOCUS_RING } from "./focus";
+export { default as ConfirmButton } from "./ConfirmButton";

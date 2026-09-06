@@ -1,10 +1,9 @@
 import { notFound } from "next/navigation";
 import { createSessionClient } from "@/lib/supabase/server";
-import BrandForm from "@/components/admin/BrandForm";
-import Breadcrumbs from "@/components/admin/Breadcrumbs";
+import PageHeader from "@/components/ui/PageHeader";
+import BrandForm from "@/components/studio/BrandForm";
 import type { BrandLink, IndustryKey } from "@/lib/brands";
 import { updateBrand } from "../../actions";
-import { ADMIN_H1_CLASS } from "@/lib/admin/ui";
 
 export default async function EditBrandPage({
   params,
@@ -24,16 +23,10 @@ export default async function EditBrandPage({
   }
 
   return (
-    <div>
-      <Breadcrumbs
-        items={[
-          { label: "Brands", href: "/admin/brands" },
-          { label: `@${brand.handle}` },
-        ]}
+    <div className="mx-auto max-w-3xl">
+      <PageHeader
+        title={`Edit @${brand.handle}`}
       />
-      <h1 className={ADMIN_H1_CLASS}>
-        Edit Brand
-      </h1>
       <BrandForm
         action={updateBrand.bind(null, id)}
         defaults={{
