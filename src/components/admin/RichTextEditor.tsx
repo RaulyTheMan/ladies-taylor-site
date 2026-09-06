@@ -33,11 +33,13 @@ function ToolbarButton({
   active,
   children,
   label,
+  focusRing,
 }: {
   onClick: () => void;
   active?: boolean;
   children: React.ReactNode;
   label: string;
+  focusRing: string;
 }) {
   return (
     <button
@@ -46,7 +48,7 @@ function ToolbarButton({
       aria-label={label}
       aria-pressed={active}
       title={label}
-      className={`flex h-8 w-8 items-center justify-center rounded-md transition-colors ${ADMIN_FOCUS_RING_CLASS} ${
+      className={`flex h-8 w-8 items-center justify-center rounded-md transition-colors ${focusRing} ${
         active ? "bg-black text-white" : "text-black/60 hover:bg-black/[0.06] hover:text-black"
       }`}
     >
@@ -61,18 +63,46 @@ function ToolbarDivider() {
 
 type PromptMode = "link" | "embed" | null;
 
+/**
+ * The editor's own surfaces — toolbar and the link/embed prompt — styled by
+ * whichever shell is hosting it. Defaults to the old admin tokens so the
+ * sections still on that shell render exactly as before; the studio passes
+ * its own. Everything else in here is already neutral black-on-white and
+ * needs no override.
+ */
+export type EditorChrome = {
+  focusRing: string;
+  label: string;
+  input: string;
+  primaryButton: string;
+  secondaryButton: string;
+  dialog: string;
+};
+
+const ADMIN_CHROME: EditorChrome = {
+  focusRing: ADMIN_FOCUS_RING_CLASS,
+  label: ADMIN_LABEL_CLASS,
+  input: ADMIN_INPUT_CLASS,
+  primaryButton: ADMIN_BUTTON_CLASS,
+  secondaryButton: ADMIN_BUTTON_SECONDARY_CLASS,
+  dialog:
+    "m-auto w-[calc(100%-2rem)] max-w-sm rounded-lg border border-black/10 bg-white p-6 shadow-xl backdrop:bg-black/50",
+};
+
 export default function RichTextEditor({
   name,
   slug,
   defaultValue,
   uploadImageAction,
   ariaLabelledBy,
+  chrome = ADMIN_CHROME,
 }: {
   name: string;
   slug: string;
   defaultValue?: TiptapDoc;
   uploadImageAction: (slug: string, formData: FormData) => Promise<string>;
   ariaLabelledBy?: string;
+  chrome?: EditorChrome;
 }) {
   const hiddenInputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -198,7 +228,7 @@ export default function RichTextEditor({
           id="richtext-style"
           value={currentStyle()}
           onChange={(e) => applyStyle(e.target.value)}
-          className={`h-8 rounded-md border-none bg-transparent px-2 text-xs font-medium text-black/70 hover:bg-black/[0.06] focus:outline-none ${ADMIN_FOCUS_RING_CLASS}`}
+          className={`h-8 rounded-md border-none bg-transparent px-2 text-xs font-medium text-black/70 hover:bg-black/[0.06] focus:outline-none ${chrome.focusRing}`}
         >
           <option value="p">Paragraph</option>
           <option value="h2">Heading</option>
@@ -208,6 +238,7 @@ export default function RichTextEditor({
         <ToolbarDivider />
 
         <ToolbarButton
+          focusRing={chrome.focusRing}
           label="Bold"
           active={editor.isActive("bold")}
           onClick={() => editor.chain().focus().toggleBold().run()}
@@ -215,6 +246,7 @@ export default function RichTextEditor({
           <BoldIcon className="h-4 w-4" />
         </ToolbarButton>
         <ToolbarButton
+          focusRing={chrome.focusRing}
           label="Italic"
           active={editor.isActive("italic")}
           onClick={() => editor.chain().focus().toggleItalic().run()}
@@ -222,6 +254,7 @@ export default function RichTextEditor({
           <ItalicIcon className="h-4 w-4" />
         </ToolbarButton>
         <ToolbarButton
+          focusRing={chrome.focusRing}
           label="Strikethrough"
           active={editor.isActive("strike")}
           onClick={() => editor.chain().focus().toggleStrike().run()}
@@ -229,6 +262,7 @@ export default function RichTextEditor({
           <Strikethrough className="h-4 w-4" />
         </ToolbarButton>
         <ToolbarButton
+          focusRing={chrome.focusRing}
           label="Code"
           active={editor.isActive("code")}
           onClick={() => editor.chain().focus().toggleCode().run()}
@@ -238,22 +272,32 @@ export default function RichTextEditor({
 
         <ToolbarDivider />
 
-        <ToolbarButton label="Link" onClick={() => openPrompt("link")}>
+        <ToolbarButton
+          focusRing={chrome.focusRing}
+          label="Link"
+          onClick={() => openPrompt("link")}
+        >
           <Link2 className="h-4 w-4" />
         </ToolbarButton>
         <ToolbarButton
+          focusRing={chrome.focusRing}
           label="Insert image"
           onClick={() => fileInputRef.current?.click()}
         >
           <ImageIcon className="h-4 w-4" />
         </ToolbarButton>
-        <ToolbarButton label="Embed video" onClick={() => openPrompt("embed")}>
+        <ToolbarButton
+          focusRing={chrome.focusRing}
+          label="Embed video"
+          onClick={() => openPrompt("embed")}
+        >
           <Video className="h-4 w-4" />
         </ToolbarButton>
 
         <ToolbarDivider />
 
         <ToolbarButton
+          focusRing={chrome.focusRing}
           label="Quote"
           active={editor.isActive("blockquote")}
           onClick={() => editor.chain().focus().toggleBlockquote().run()}
@@ -261,6 +305,7 @@ export default function RichTextEditor({
           <Quote className="h-4 w-4" />
         </ToolbarButton>
         <ToolbarButton
+          focusRing={chrome.focusRing}
           label="Bullet list"
           active={editor.isActive("bulletList")}
           onClick={() => editor.chain().focus().toggleBulletList().run()}
@@ -268,6 +313,7 @@ export default function RichTextEditor({
           <List className="h-4 w-4" />
         </ToolbarButton>
         <ToolbarButton
+          focusRing={chrome.focusRing}
           label="Numbered list"
           active={editor.isActive("orderedList")}
           onClick={() => editor.chain().focus().toggleOrderedList().run()}
@@ -284,7 +330,7 @@ export default function RichTextEditor({
       <dialog
         ref={promptDialogRef}
         aria-labelledby="richtext-prompt-title"
-        className="m-auto w-[calc(100%-2rem)] max-w-sm rounded-lg border border-black/10 bg-white p-6 shadow-xl backdrop:bg-black/50"
+        className={chrome.dialog}
         onClick={(e) => {
           if (e.target === promptDialogRef.current) closePrompt();
         }}
@@ -306,7 +352,7 @@ export default function RichTextEditor({
             {promptMode === "embed" ? "Embed video" : "Insert link"}
           </h2>
 
-          <label htmlFor="richtext-prompt-input" className={`mt-4 block ${ADMIN_LABEL_CLASS}`}>
+          <label htmlFor="richtext-prompt-input" className={`mt-4 block ${chrome.label}`}>
             {promptMode === "embed" ? "YouTube or Vimeo URL" : "Link URL"}
           </label>
           <input
@@ -322,7 +368,7 @@ export default function RichTextEditor({
               if (e.key === "Enter") handlePromptSubmit(e);
             }}
             placeholder="https://..."
-            className={ADMIN_INPUT_CLASS}
+            className={chrome.input}
           />
           {promptError && (
             <p role="alert" className="mt-1 text-xs font-medium text-red-600">
@@ -334,11 +380,11 @@ export default function RichTextEditor({
             <button
               type="button"
               onClick={closePrompt}
-              className={ADMIN_BUTTON_SECONDARY_CLASS}
+              className={chrome.secondaryButton}
             >
               Cancel
             </button>
-            <button type="button" onClick={handlePromptSubmit} className={ADMIN_BUTTON_CLASS}>
+            <button type="button" onClick={handlePromptSubmit} className={chrome.primaryButton}>
               {promptMode === "embed" ? "Embed" : "Insert"}
             </button>
           </div>

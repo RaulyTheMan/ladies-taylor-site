@@ -22,3 +22,4 @@ export {
 } from "./Menu";
 export { FOCUS_RING } from "./focus";
 export { default as ConfirmButton } from "./ConfirmButton";
+export { Dialog, DialogTrigger, DialogContent } from "./Dialog";

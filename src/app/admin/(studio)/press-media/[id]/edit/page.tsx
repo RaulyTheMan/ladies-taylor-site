@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { createSessionClient } from "@/lib/supabase/server";
-import PostForm from "@/components/admin/PostForm";
+import PostForm from "@/components/studio/PostForm";
 import type { TiptapDoc } from "@/lib/richtext/types";
 import { EMPTY_DOC } from "@/lib/richtext/types";
 import { updatePost } from "../../actions";

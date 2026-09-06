@@ -1,9 +1,11 @@
 import { notFound } from "next/navigation";
+import Link from "next/link";
+import { Users } from "lucide-react";
 import { createSessionClient } from "@/lib/supabase/server";
-import EventForm from "@/components/admin/EventForm";
-import Breadcrumbs from "@/components/admin/Breadcrumbs";
+import PageHeader from "@/components/ui/PageHeader";
+import { buttonClasses } from "@/components/ui/Button";
+import EventForm from "@/components/studio/EventForm";
 import { updateEvent } from "../../actions";
-import { ADMIN_H1_CLASS } from "@/lib/admin/ui";
 
 export default async function EditEventPage({
   params,
@@ -23,16 +25,19 @@ export default async function EditEventPage({
   }
 
   return (
-    <div>
-      <Breadcrumbs
-        items={[
-          { label: "Events", href: "/admin/events" },
-          { label: event.title },
-        ]}
+    <div className="mx-auto max-w-3xl">
+      <PageHeader
+        title={`Edit ${event.title}`}
+        actions={
+          <Link
+            href={`/admin/events/${event.id}/participants`}
+            className={buttonClasses("secondary")}
+          >
+            <Users className="h-3.5 w-3.5" aria-hidden="true" />
+            Participants
+          </Link>
+        }
       />
-      <h1 className={ADMIN_H1_CLASS}>
-        Edit Event
-      </h1>
       <EventForm
         action={updateEvent.bind(null, id)}
         defaults={{
