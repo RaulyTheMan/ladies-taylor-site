@@ -20,13 +20,6 @@ import {
 import { Embed, parseEmbedUrl } from "@/lib/richtext/embed-extension";
 import type { TiptapDoc } from "@/lib/richtext/types";
 import { EMPTY_DOC } from "@/lib/richtext/types";
-import {
-  ADMIN_BUTTON_CLASS,
-  ADMIN_BUTTON_SECONDARY_CLASS,
-  ADMIN_FOCUS_RING_CLASS,
-  ADMIN_INPUT_CLASS,
-  ADMIN_LABEL_CLASS,
-} from "@/lib/admin/ui";
 
 function ToolbarButton({
   onClick,
@@ -49,7 +42,9 @@ function ToolbarButton({
       aria-pressed={active}
       title={label}
       className={`flex h-8 w-8 items-center justify-center rounded-md transition-colors ${focusRing} ${
-        active ? "bg-black text-white" : "text-black/60 hover:bg-black/[0.06] hover:text-black"
+        active
+          ? "bg-admin-fg text-white"
+          : "text-admin-muted hover:bg-admin-surface-hover hover:text-admin-fg"
       }`}
     >
       {children}
@@ -58,17 +53,16 @@ function ToolbarButton({
 }
 
 function ToolbarDivider() {
-  return <div aria-hidden className="mx-1 h-5 w-px shrink-0 bg-black/10" />;
+  return <div aria-hidden className="mx-1 h-5 w-px shrink-0 bg-admin-border" />;
 }
 
 type PromptMode = "link" | "embed" | null;
 
 /**
- * The editor's own surfaces — toolbar and the link/embed prompt — styled by
- * whichever shell is hosting it. Defaults to the old admin tokens so the
- * sections still on that shell render exactly as before; the studio passes
- * its own. Everything else in here is already neutral black-on-white and
- * needs no override.
+ * The editor's own surfaces — toolbar and the link/embed prompt — supplied by
+ * the host form. This existed so the editor could serve both shells during
+ * the migration; now that only the studio uses it the shape stays, because it
+ * keeps the editor free of any one form's styling decisions.
  */
 export type EditorChrome = {
   focusRing: string;
@@ -79,30 +73,20 @@ export type EditorChrome = {
   dialog: string;
 };
 
-const ADMIN_CHROME: EditorChrome = {
-  focusRing: ADMIN_FOCUS_RING_CLASS,
-  label: ADMIN_LABEL_CLASS,
-  input: ADMIN_INPUT_CLASS,
-  primaryButton: ADMIN_BUTTON_CLASS,
-  secondaryButton: ADMIN_BUTTON_SECONDARY_CLASS,
-  dialog:
-    "m-auto w-[calc(100%-2rem)] max-w-sm rounded-lg border border-black/10 bg-white p-6 shadow-xl backdrop:bg-black/50",
-};
-
 export default function RichTextEditor({
   name,
   slug,
   defaultValue,
   uploadImageAction,
   ariaLabelledBy,
-  chrome = ADMIN_CHROME,
+  chrome,
 }: {
   name: string;
   slug: string;
   defaultValue?: TiptapDoc;
   uploadImageAction: (slug: string, formData: FormData) => Promise<string>;
   ariaLabelledBy?: string;
-  chrome?: EditorChrome;
+  chrome: EditorChrome;
 }) {
   const hiddenInputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -198,7 +182,11 @@ export default function RichTextEditor({
   }
 
   if (!editor) {
-    return <div className="min-h-[400px] text-lg text-black/40">Loading editor...</div>;
+    return (
+      <div className="min-h-[400px] text-[13px] text-admin-muted">
+        Loading editor…
+      </div>
+    );
   }
 
   return (
@@ -220,7 +208,7 @@ export default function RichTextEditor({
 
       <EditorContent editor={editor} />
 
-      <div className="sticky bottom-0 z-10 -mx-8 mt-6 flex flex-wrap items-center gap-0.5 border-t border-black/10 bg-white/95 px-8 py-2 backdrop-blur">
+      <div className="sticky bottom-0 z-10 -mx-6 mt-6 flex flex-wrap items-center gap-0.5 border-t border-admin-border bg-admin-bg/95 px-6 py-2 backdrop-blur">
         <label htmlFor="richtext-style" className="sr-only">
           Text style
         </label>
@@ -228,7 +216,7 @@ export default function RichTextEditor({
           id="richtext-style"
           value={currentStyle()}
           onChange={(e) => applyStyle(e.target.value)}
-          className={`h-8 rounded-md border-none bg-transparent px-2 text-xs font-medium text-black/70 hover:bg-black/[0.06] focus:outline-none ${chrome.focusRing}`}
+          className={`h-8 rounded-md border-none bg-transparent px-2 text-xs font-medium text-admin-muted hover:bg-admin-surface-hover focus:outline-none ${chrome.focusRing}`}
         >
           <option value="p">Paragraph</option>
           <option value="h2">Heading</option>
@@ -347,7 +335,7 @@ export default function RichTextEditor({
         <div>
           <h2
             id="richtext-prompt-title"
-            className="text-base font-semibold text-black"
+            className="text-base font-semibold text-admin-fg"
           >
             {promptMode === "embed" ? "Embed video" : "Insert link"}
           </h2>
@@ -371,7 +359,7 @@ export default function RichTextEditor({
             className={chrome.input}
           />
           {promptError && (
-            <p role="alert" className="mt-1 text-xs font-medium text-red-600">
+            <p role="alert" className="mt-1 text-xs text-admin-danger">
               {promptError}
             </p>
           )}

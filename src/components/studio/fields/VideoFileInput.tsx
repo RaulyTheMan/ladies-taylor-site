@@ -50,11 +50,11 @@ export default function VideoFileInput({
 
   return (
     <div>
-      <p className="text-xs text-black/50">Attach a Video</p>
+      <p className="text-xs text-admin-muted">Attach a Video</p>
       <button
         type="button"
         onClick={() => inputRef.current?.click()}
-        className="mt-1 text-sm text-black/40 underline decoration-black/20 underline-offset-2 hover:text-black/60"
+        className="mt-1 text-[13px] text-admin-muted underline decoration-admin-border-strong underline-offset-2 hover:text-admin-fg"
       >
         {fileName ?? "Upload File"}
       </button>
@@ -76,7 +76,7 @@ export default function VideoFileInput({
         type="button"
         onClick={() => inputRef.current?.click()}
         aria-label="Upload video"
-        className="mt-3 flex aspect-[9/16] w-full max-w-[260px] items-center justify-center overflow-hidden rounded-md bg-black/10"
+        className="mt-3 flex aspect-[9/16] w-full max-w-[260px] items-center justify-center overflow-hidden rounded-admin-md bg-admin-surface"
       >
         {previewUrl ? (
           <video src={previewUrl} className="h-full w-full object-cover" muted playsInline />
@@ -91,14 +91,14 @@ export default function VideoFileInput({
         <>
           <input type="hidden" name="videoWidth" value={dimensions.width} />
           <input type="hidden" name="videoHeight" value={dimensions.height} />
-          <p className="mt-2 text-xs text-black/60">
+          <p className="mt-2 text-xs text-admin-muted">
             {dimensions.width}×{dimensions.height}
           </p>
         </>
       )}
-      {error && <p className="mt-1 text-xs text-lt-red">{error}</p>}
+      {error && <p className="mt-1 text-xs text-admin-danger">{error}</p>}
       {!fileName && helperText && (
-        <p className="mt-2 text-xs text-black/60">{helperText}</p>
+        <p className="mt-2 text-xs text-admin-muted">{helperText}</p>
       )}
     </div>
   );

@@ -7,7 +7,7 @@ import { z } from "zod";
 import { ArrowLeft, UserRound, Plus, X } from "lucide-react";
 import RichTextEditor, {
   type EditorChrome,
-} from "@/components/admin/RichTextEditor";
+} from "@/components/studio/RichTextEditor";
 import FileInputPreview from "@/components/studio/fields/FileInputPreview";
 import StudioDatePicker from "@/components/studio/fields/StudioDatePicker";
 import Button, { buttonClasses } from "@/components/ui/Button";

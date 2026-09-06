@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import type { NewsfeedItem } from "@/components/desktop/window-content/NewsfeedContent";
-import { ADMIN_FOCUS_RING_CLASS } from "@/lib/admin/ui";
+import { X, Plus } from "lucide-react";
+import { controlClasses } from "@/components/ui/Field";
+import Button, { IconButton } from "@/components/ui/Button";
 
 type Draft = NewsfeedItem & { key: number };
 
@@ -35,55 +37,57 @@ export default function NewsfeedItemsEditor({
       {items.map((item, i) => (
         <div
           key={item.key}
-          className="grid grid-cols-1 gap-2 rounded-md border border-black/10 bg-black/[0.02] p-3 sm:grid-cols-[1fr_2fr_1fr_auto]"
+          className="grid grid-cols-1 gap-2 rounded-admin-md border border-admin-border bg-admin-surface p-3 sm:grid-cols-[1fr_2fr_1fr_auto]"
         >
           <input
             value={item.handle}
             onChange={(e) => update(item.key, { handle: e.target.value })}
             placeholder="@handle"
             aria-label={`Feed item ${i + 1} handle`}
-            className={`rounded-md border border-black/15 bg-white px-2 py-1.5 text-xs text-black focus:border-black focus:outline-none focus:ring-2 focus:ring-black/15 ${ADMIN_FOCUS_RING_CLASS}`}
+            className={controlClasses(false, "h-8 px-2.5")}
           />
           <input
             value={item.headline}
             onChange={(e) => update(item.key, { headline: e.target.value })}
             placeholder="Headline"
             aria-label={`Feed item ${i + 1} headline`}
-            className={`rounded-md border border-black/15 bg-white px-2 py-1.5 text-xs text-black focus:border-black focus:outline-none focus:ring-2 focus:ring-black/15 ${ADMIN_FOCUS_RING_CLASS}`}
+            className={controlClasses(false, "h-8 px-2.5")}
           />
           <input
             value={item.stat}
             onChange={(e) => update(item.key, { stat: e.target.value })}
             placeholder="100K Views | 204 Shares"
             aria-label={`Feed item ${i + 1} stat`}
-            className={`rounded-md border border-black/15 bg-white px-2 py-1.5 text-xs text-black focus:border-black focus:outline-none focus:ring-2 focus:ring-black/15 ${ADMIN_FOCUS_RING_CLASS}`}
+            className={controlClasses(false, "h-8 px-2.5")}
           />
           {items.length > 1 && (
-            <button
-              type="button"
+            <IconButton
+              variant="ghost"
               onClick={() =>
                 setItems((prev) => prev.filter((i) => i.key !== item.key))
               }
               aria-label={`Remove feed item ${i + 1}`}
-              className={`rounded px-2 py-1 text-xs font-medium text-red-600 ${ADMIN_FOCUS_RING_CLASS}`}
+              className="text-admin-muted hover:text-admin-danger"
             >
-              Remove
-            </button>
+              <X className="h-4 w-4" aria-hidden="true" />
+            </IconButton>
           )}
         </div>
       ))}
-      <button
-        type="button"
+      <Button
+        variant="ghost"
+        size="sm"
         onClick={() =>
           setItems((prev) => [
             ...prev,
             { key: Date.now(), handle: "", headline: "", stat: "" },
           ])
         }
-        className={`self-start rounded px-0.5 py-1 text-xs font-medium text-black/60 underline underline-offset-2 hover:text-black ${ADMIN_FOCUS_RING_CLASS}`}
+        className="self-start text-admin-muted"
       >
-        + Add Item
-      </button>
+        <Plus className="h-3.5 w-3.5" aria-hidden="true" />
+        Add item
+      </Button>
     </div>
   );
 }

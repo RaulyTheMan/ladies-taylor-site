@@ -1,8 +1,7 @@
-import DesktopWindowForm from "@/components/admin/DesktopWindowForm";
-import Breadcrumbs from "@/components/admin/Breadcrumbs";
+import PageHeader from "@/components/ui/PageHeader";
+import DesktopWindowForm from "@/components/studio/DesktopWindowForm";
 import type { WindowKind } from "@/components/desktop/types";
 import { createWindow } from "../actions";
-import { ADMIN_H1_CLASS } from "@/lib/admin/ui";
 
 const VALID_KINDS: WindowKind[] = [
   "video",
@@ -23,17 +22,13 @@ export default async function NewDesktopWindowPage({
   const lockKind = VALID_KINDS.find((k) => k === kind);
 
   return (
-    <div>
-      <Breadcrumbs
-        items={[
-          { label: "Desktop", href: "/admin/desktop" },
-          { label: "New Window" },
-        ]}
+    <div className="mx-auto max-w-3xl">
+      <PageHeader title="New window" />
+      <DesktopWindowForm
+        action={createWindow}
+        lockKind={lockKind}
+        submitLabel="Create window"
       />
-      <h1 className={ADMIN_H1_CLASS}>
-        New Window
-      </h1>
-      <DesktopWindowForm action={createWindow} lockKind={lockKind} />
     </div>
   );
 }

@@ -25,3 +25,26 @@ export function formatDate(value: string | null | undefined): string {
   const date = new Date(value);
   return Number.isNaN(date.getTime()) ? "—" : FORMATTER.format(date);
 }
+
+const DATE_TIME_FORMATTER = new Intl.DateTimeFormat("en-GB", {
+  day: "2-digit",
+  month: "short",
+  year: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+  hour12: false,
+  timeZone: "UTC",
+});
+
+/**
+ * Same reasoning as formatDate, for timestamps that need the time of day.
+ * UTC is stated in the output because a moderator reading a chat log needs to
+ * know which clock the times are on.
+ */
+export function formatDateTime(value: string | null | undefined): string {
+  if (!value) return "—";
+  const date = new Date(value);
+  return Number.isNaN(date.getTime())
+    ? "—"
+    : `${DATE_TIME_FORMATTER.format(date)} UTC`;
+}

@@ -43,14 +43,14 @@ export default function Toast() {
     <div
       role="status"
       aria-live="polite"
-      className="fixed bottom-6 right-6 z-[60] flex items-center gap-2 rounded-lg border border-black/10 bg-black px-4 py-3 text-sm font-medium text-white shadow-lg"
+      className="admin-root fixed bottom-5 right-5 z-[60] flex items-center gap-2 rounded-admin-md bg-admin-fg px-3.5 py-2.5 text-[13px] font-medium text-white shadow-lg"
     >
       {message}
       <button
         type="button"
         onClick={() => setMessage(null)}
         aria-label="Dismiss notification"
-        className="ml-2 text-white/60 hover:text-white"
+        className="ml-1 rounded-admin-sm px-1 text-white/60 transition-colors hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white focus-visible:outline"
       >
         ×
       </button>

@@ -35,7 +35,7 @@ import {
   MenuLabel,
   MenuSeparator,
 } from "@/components/ui/Menu";
-import Toast from "@/components/admin/Toast";
+import Toast from "@/components/studio/Toast";
 import CommandPalette from "./CommandPalette";
 import StudioBreadcrumbs from "./StudioBreadcrumbs";
 

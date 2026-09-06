@@ -1,13 +1,12 @@
 import { notFound } from "next/navigation";
 import { createSessionClient } from "@/lib/supabase/server";
-import DesktopWindowForm from "@/components/admin/DesktopWindowForm";
-import Breadcrumbs from "@/components/admin/Breadcrumbs";
+import PageHeader from "@/components/ui/PageHeader";
+import DesktopWindowForm from "@/components/studio/DesktopWindowForm";
 import type { NewsfeedItem } from "@/components/desktop/window-content/NewsfeedContent";
 import type { TiptapDoc } from "@/lib/richtext/types";
 import { EMPTY_DOC } from "@/lib/richtext/types";
 import { paragraphsToTiptapDoc } from "@/lib/richtext/fromPlainParagraphs";
 import { updateWindow } from "../../actions";
-import { ADMIN_H1_CLASS } from "@/lib/admin/ui";
 
 export default async function EditDesktopWindowPage({
   params,
@@ -42,16 +41,8 @@ export default async function EditDesktopWindowPage({
     : undefined;
 
   return (
-    <div>
-      <Breadcrumbs
-        items={[
-          { label: "Desktop", href: "/admin/desktop" },
-          { label: win.title },
-        ]}
-      />
-      <h1 className={ADMIN_H1_CLASS}>
-        Edit Window
-      </h1>
+    <div className="mx-auto max-w-3xl">
+      <PageHeader title={`Edit ${win.title}`} />
       <DesktopWindowForm
         action={updateWindow.bind(null, id)}
         lockKind={win.kind}

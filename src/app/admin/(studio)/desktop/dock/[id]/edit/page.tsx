@@ -1,9 +1,8 @@
 import { notFound } from "next/navigation";
 import { createSessionClient } from "@/lib/supabase/server";
-import DesktopDockAppForm from "@/components/admin/DesktopDockAppForm";
-import Breadcrumbs from "@/components/admin/Breadcrumbs";
+import PageHeader from "@/components/ui/PageHeader";
+import DockAppForm from "@/components/studio/DockAppForm";
 import { updateDockApp } from "../../actions";
-import { ADMIN_H1_CLASS } from "@/lib/admin/ui";
 
 export default async function EditDockAppPage({
   params,
@@ -24,18 +23,9 @@ export default async function EditDockAppPage({
   }
 
   return (
-    <div>
-      <Breadcrumbs
-        items={[
-          { label: "Desktop", href: "/admin/desktop" },
-          { label: "Dock Apps", href: "/admin/desktop/dock" },
-          { label: app.label },
-        ]}
-      />
-      <h1 className={ADMIN_H1_CLASS}>
-        Edit Dock App
-      </h1>
-      <DesktopDockAppForm
+    <div className="mx-auto max-w-3xl">
+      <PageHeader title={`Edit ${app.label}`} />
+      <DockAppForm
         action={updateDockApp.bind(null, id)}
         defaults={{
           label: app.label,
