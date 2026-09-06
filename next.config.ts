@@ -19,6 +19,25 @@ const nextConfig: NextConfig = {
       bodySizeLimit: "10mb",
     },
   },
+  async redirects() {
+    return [
+      // The sales pipeline moved permanently to the standalone CRM, and these
+      // two sections are deleted in the same commit as this redirect — the
+      // pages and the redirect must never coexist, or the sections become
+      // silently unreachable. Kept as 308s so old bookmarks still land
+      // somewhere useful.
+      {
+        source: "/admin/leads",
+        destination: "https://leads.ladiestaylor.com",
+        permanent: true,
+      },
+      {
+        source: "/admin/forms",
+        destination: "https://leads.ladiestaylor.com",
+        permanent: true,
+      },
+    ];
+  },
   async headers() {
     return [
       {
