@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import * as Dialog from "@radix-ui/react-dialog";
 import { Search, CornerDownLeft, Plus } from "lucide-react";
@@ -38,6 +38,12 @@ export default function CommandPalette({
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [activeIndex, setActiveIndex] = useState(0);
+
+  // Radix restores focus to its own Trigger on close, but this palette has no
+  // Trigger — ⌘K and the header button both just flip state — so without the
+  // pair of handlers below, dismissing it drops focus on <body> and the next
+  // Tab restarts from the top of the page.
+  const returnFocusTo = useRef<HTMLElement | null>(null);
 
   const commands = useMemo<Command[]>(
     () => [
@@ -113,6 +119,23 @@ export default function CommandPalette({
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-[60] bg-black/40" />
         <Dialog.Content
+          onOpenAutoFocus={() => {
+            // Fires before Radix moves focus into the content, so this still
+            // reads whatever was focused when the palette was summoned —
+            // and it is an event handler, not render, so the ref write is
+            // legal. Not prevented: the search input's autoFocus still wins.
+            returnFocusTo.current = document.activeElement as HTMLElement | null;
+          }}
+          onCloseAutoFocus={(event) => {
+            // Only meaningful when the palette is dismissed in place. After a
+            // navigation the old element is gone from the document and the
+            // guard below falls through to Radix's default.
+            const target = returnFocusTo.current;
+            if (target?.isConnected) {
+              event.preventDefault();
+              target.focus();
+            }
+          }}
           aria-label="Command palette"
           className="admin-root fixed left-1/2 top-[15vh] z-[61] w-[min(32rem,calc(100vw-2rem))] -translate-x-1/2 overflow-hidden rounded-admin-lg border border-admin-border bg-admin-bg shadow-2xl"
         >
