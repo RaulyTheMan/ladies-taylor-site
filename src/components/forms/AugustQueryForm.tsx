@@ -12,6 +12,7 @@ import {
   BUDGET_LABELS,
   FUNNEL_STEPS,
   SERVICES,
+  type Budget,
   type FunnelStep,
 } from "@/lib/augustQuery";
 
@@ -71,6 +72,21 @@ const labelClass = "text-xs font-bold uppercase tracking-wide text-black/50";
 
 const inputClass =
   "mt-2 w-full border-b-2 border-black/20 bg-transparent pb-2 text-xl text-black placeholder:text-black/25 focus:border-lt-red focus:outline-none md:text-2xl";
+
+/**
+ * Fisher-Yates. The budget options are shown in a random order per visitor
+ * because the first option was being picked far more than the rest, and a
+ * fixed order cannot tell a real preference apart from people just taking the
+ * one at the top.
+ */
+function shuffled<T>(items: readonly T[]): T[] {
+  const out = [...items];
+  for (let i = out.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+  return out;
+}
 
 /**
  * Turns off browser and password-manager autofill for a field.
@@ -162,6 +178,12 @@ export default function AugustQueryForm() {
   const firstFieldRef = useRef<HTMLInputElement>(null);
   const advanceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const trackedSteps = useRef(new Set<number>());
+  // Starts in the canonical order so the prerendered HTML and the first client
+  // render agree, then shuffles on the interaction that leads to the budget
+  // screen, which happens before it is ever displayed. Shuffled once per
+  // visit, so going back and forward does not reorder under them.
+  const [budgetOrder, setBudgetOrder] = useState<readonly Budget[]>(BUDGETS);
+  const budgetShuffled = useRef(false);
   // Anonymous, per-visit, and never rendered, so the server and client
   // generating different values is harmless.
   const [sessionId] = useState(() =>
@@ -296,6 +318,10 @@ export default function AugustQueryForm() {
       void handleSubmit();
       return;
     }
+    if (!budgetShuffled.current) {
+      budgetShuffled.current = true;
+      setBudgetOrder(shuffled(BUDGETS));
+    }
     goNext();
   }, [stepValid, step, handleSubmit, goNext]);
 
@@ -328,12 +354,12 @@ export default function AugustQueryForm() {
       if (step === 0 && index < SERVICES.length) {
         event.preventDefault();
         toggleService(SERVICES[index]);
-      } else if (step === 1) pick(BUDGETS, "budget");
+      } else if (step === 1) pick(budgetOrder, "budget");
     }
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [step, submitted, advance, goBack, selectAndAdvance, toggleService]);
+  }, [step, submitted, advance, goBack, selectAndAdvance, toggleService, budgetOrder]);
 
   const variants = reduceMotion
     ? {
@@ -428,7 +454,7 @@ export default function AugustQueryForm() {
           <>
             <QuestionHead step={step} question="What's your budget?" />
             {renderChoices(
-              BUDGETS,
+              budgetOrder,
               data.budget,
               "budget",
               (option) => BUDGET_LABELS[option as keyof typeof BUDGET_LABELS]
