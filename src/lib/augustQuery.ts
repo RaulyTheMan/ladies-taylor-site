@@ -35,12 +35,10 @@ export type Budget = (typeof BUDGETS)[number];
  * client cannot record a step the server does not recognise.
  */
 export const FUNNEL_STEPS = [
-  "01_human_check",
-  "02_services",
-  "03_budget",
-  "04_details",
+  "01_services",
+  "02_budget",
+  "03_details",
   "submitted",
-  "challenge_failed",
 ] as const;
 
 export type FunnelStep = (typeof FUNNEL_STEPS)[number];

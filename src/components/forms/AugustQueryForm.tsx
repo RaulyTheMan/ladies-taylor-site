@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { Check, ChevronDown, ChevronUp, RefreshCw } from "lucide-react";
+import { Check, ChevronDown, ChevronUp } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { PRIMARY_BUTTON_CLASS } from "@/lib/ui";
 import { captureMetaSignals, trackMetaPixelEventWithId } from "@/lib/metaPixel";
@@ -15,7 +15,7 @@ import {
   type FunnelStep,
 } from "@/lib/augustQuery";
 
-const TOTAL_STEPS = 4;
+const TOTAL_STEPS = 3;
 const ALL_SERVICES = "All of the above";
 const AUTO_ADVANCE_MS = 260;
 const LETTERS = "ABCDEFGH";
@@ -71,6 +71,23 @@ const labelClass = "text-xs font-bold uppercase tracking-wide text-black/50";
 
 const inputClass =
   "mt-2 w-full border-b-2 border-black/20 bg-transparent pb-2 text-xl text-black placeholder:text-black/25 focus:border-lt-red focus:outline-none md:text-2xl";
+
+/**
+ * Turns off browser and password-manager autofill for a field.
+ *
+ * `autoComplete="off"` alone is not enough: Chrome ignores it on fields it
+ * recognises, such as name and tel, so each field is given an unrecognised
+ * token instead, which it has no heuristic for. The data attributes are the
+ * documented opt-outs for 1Password and LastPass.
+ */
+function noAutofill(field: string) {
+  return {
+    autoComplete: `off-${field}`,
+    "data-1p-ignore": true,
+    "data-lpignore": "true",
+    "data-form-type": "other",
+  } as const;
+}
 
 /** A lettered option row. Selected rows pick up the site's comic border. */
 function ChoiceRow({
@@ -142,14 +159,6 @@ export default function AugustQueryForm() {
   const [error, setError] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
-  const [challenge, setChallenge] = useState<{ prompt: string; token: string } | null>(
-    null
-  );
-  const [challengeAnswer, setChallengeAnswer] = useState("");
-  const [challengeError, setChallengeError] = useState<string | null>(null);
-  const [challengeLoading, setChallengeLoading] = useState(false);
-  const [verifying, setVerifying] = useState(false);
-
   const firstFieldRef = useRef<HTMLInputElement>(null);
   const advanceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const trackedSteps = useRef(new Set<number>());
@@ -171,12 +180,10 @@ export default function AugustQueryForm() {
   const stepValid = useMemo(() => {
     switch (step) {
       case 0:
-        return challengeAnswer.trim().length > 0 && challenge !== null;
-      case 1:
         return data.services.length > 0;
-      case 2:
+      case 1:
         return data.budget.length > 0;
-      case 3:
+      case 2:
         return (
           data.name.trim().length > 0 &&
           data.phone.trim().length > 0 &&
@@ -186,7 +193,7 @@ export default function AugustQueryForm() {
       default:
         return false;
     }
-  }, [step, data, challengeAnswer, challenge]);
+  }, [step, data]);
 
   // Records the furthest point each visitor reached, so drop-off is visible
   // per question instead of only "submitted or not". Fires once per screen:
@@ -196,59 +203,6 @@ export default function AugustQueryForm() {
     trackedSteps.current.add(step);
     reportStep(sessionId, FUNNEL_STEPS[step]);
   }, [step, sessionId]);
-
-  const fetchChallenge = useCallback(async (excludeToken?: string) => {
-    const url = excludeToken
-      ? `/api/form-challenge?exclude=${encodeURIComponent(excludeToken)}`
-      : "/api/form-challenge";
-    const res = await fetch(url);
-    if (!res.ok) throw new Error("challenge unavailable");
-    return (await res.json()) as { prompt: string; token: string };
-  }, []);
-
-  /** Swap in a new question. Used by the refresh button and by an expired token. */
-  const swapChallenge = useCallback(
-    async (excludeToken?: string) => {
-      setChallengeLoading(true);
-      setChallengeError(null);
-      try {
-        setChallenge(await fetchChallenge(excludeToken));
-        setChallengeAnswer("");
-        // The field is focused when the step animates in; after a swap the
-        // question arrives later, so put the caret back.
-        firstFieldRef.current?.focus();
-      } catch {
-        setChallenge(null);
-        setChallengeError("Couldn't load a question. Try refreshing it.");
-      } finally {
-        setChallengeLoading(false);
-      }
-    },
-    [fetchChallenge]
-  );
-
-  // Load the question up front rather than on the last step: it costs one
-  // cheap GET, the token is good for 45 minutes, and it means the final screen
-  // never shows a loading state or depends on a transition having completed.
-  useEffect(() => {
-    let cancelled = false;
-    fetchChallenge()
-      .then((next) => {
-        if (!cancelled) setChallenge(next);
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setChallengeError("Couldn't load a question. Try refreshing it.");
-        }
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [fetchChallenge]);
-
-  useEffect(() => () => {
-    if (advanceTimer.current) clearTimeout(advanceTimer.current);
-  }, []);
 
   const goNext = useCallback(() => {
     setDirection(1);
@@ -295,10 +249,9 @@ export default function AugustQueryForm() {
   }, []);
 
   const handleSubmit = useCallback(async () => {
-    if (!stepValid || !challenge || submitting) return;
+    if (!stepValid || submitting) return;
     setSubmitting(true);
     setError(false);
-    setChallengeError(null);
     try {
       // Captured before the request so the ad-click identifiers reach the
       // server, which reports the same Lead event via the Conversions API,
@@ -316,37 +269,17 @@ export default function AugustQueryForm() {
           phone: data.phone,
           city: data.city,
           aboutCompany: data.aboutCompany || undefined,
-          challengeToken: challenge.token,
-          challengeAnswer,
           meta,
         }),
       });
 
       if (res.ok) {
-        // Only ever fires on a stored, human-verified submission.
+        // Only ever fires on a stored submission.
         trackMetaPixelEventWithId("Lead", meta.eventId, {
           content_name: "August Query Form",
         });
         reportStep(sessionId, "submitted");
         setSubmitted(true);
-      } else if (res.status === 422) {
-        const body = await res.json().catch(() => null);
-        if (body?.error === "challenge_expired") {
-          // They sat on the form too long. Not their mistake, so hand them a
-          // fresh question instead of a wrong-answer message.
-          setChallengeError("That question timed out. Here's a new one.");
-          void swapChallenge(challenge.token);
-        } else {
-          // Counted separately from a plain drop-off: people bouncing off the
-          // trivia gate means the filter is too tight, not that the form is
-          // too long.
-          reportStep(sessionId, "challenge_failed");
-          setChallengeError("Not quite. Try again, or refresh for a different question.");
-        }
-        // The gate lives on the first screen, so send them back to it rather
-        // than showing an error beside a question that isn't on screen.
-        setDirection(-1);
-        setStep(0);
       } else {
         setError(true);
       }
@@ -355,39 +288,7 @@ export default function AugustQueryForm() {
     } finally {
       setSubmitting(false);
     }
-  }, [stepValid, challenge, submitting, data, challengeAnswer, swapChallenge, sessionId]);
-
-  /**
-   * Checks the gate answer before moving on. A network failure lets them
-   * through rather than blocking a real person: the submit route re-checks it
-   * anyway, so the worst case is finding out later instead of now.
-   */
-  const verifyGate = useCallback(async () => {
-    if (!challenge || verifying) return;
-    setVerifying(true);
-    setChallengeError(null);
-    try {
-      const res = await fetch("/api/form-challenge", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token: challenge.token, answer: challengeAnswer }),
-      });
-      const body = await res.json().catch(() => null);
-      if (body?.ok) {
-        goNext();
-      } else if (body?.error === "expired") {
-        setChallengeError("That question timed out. Here's a new one.");
-        void swapChallenge(challenge.token);
-      } else {
-        reportStep(sessionId, "challenge_failed");
-        setChallengeError("Not quite. Try again, or refresh for a different question.");
-      }
-    } catch {
-      goNext();
-    } finally {
-      setVerifying(false);
-    }
-  }, [challenge, verifying, challengeAnswer, goNext, swapChallenge, sessionId]);
+  }, [stepValid, submitting, data, sessionId]);
 
   const advance = useCallback(() => {
     if (!stepValid) return;
@@ -395,12 +296,8 @@ export default function AugustQueryForm() {
       void handleSubmit();
       return;
     }
-    if (step === 0) {
-      void verifyGate();
-      return;
-    }
     goNext();
-  }, [stepValid, step, handleSubmit, goNext, verifyGate]);
+  }, [stepValid, step, handleSubmit, goNext]);
 
   // Keyboard: Enter advances, Shift+Enter goes back, letters pick an option.
   useEffect(() => {
@@ -428,10 +325,10 @@ export default function AugustQueryForm() {
         selectAndAdvance(key, options[index] as never);
       };
 
-      if (step === 1 && index < SERVICES.length) {
+      if (step === 0 && index < SERVICES.length) {
         event.preventDefault();
         toggleService(SERVICES[index]);
-      } else if (step === 2) pick(BUDGETS, "budget");
+      } else if (step === 1) pick(BUDGETS, "budget");
     }
 
     window.addEventListener("keydown", onKeyDown);
@@ -503,51 +400,7 @@ export default function AugustQueryForm() {
 
   function renderStep() {
     switch (step) {
-      // The gate goes first on purpose. It is the only screen a willing person
-      // can fail, so failing it should cost them nothing they have already done.
       case 0:
-        return (
-          <>
-            <QuestionHead
-              step={step}
-              question={challenge?.prompt ?? "Loading a question..."}
-              helper="Quick check that you're a person. Refresh for a different question if this one's no good."
-            />
-            <div className="mt-8">
-              <input
-                ref={firstFieldRef}
-                type="text"
-                value={challengeAnswer}
-                onChange={(e) => {
-                  setChallengeAnswer(e.target.value);
-                  if (challengeError) setChallengeError(null);
-                }}
-                placeholder="Type your answer here..."
-                className={inputClass}
-              />
-              <button
-                type="button"
-                onClick={() => void swapChallenge(challenge?.token)}
-                disabled={challengeLoading}
-                className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-black/40 hover:text-black disabled:opacity-40"
-              >
-                <RefreshCw
-                  className={`h-3.5 w-3.5 ${challengeLoading ? "animate-spin" : ""}`}
-                  strokeWidth={3}
-                />
-                Different question
-              </button>
-              {challengeError && (
-                <p className="mt-3 text-sm font-semibold text-lt-red">{challengeError}</p>
-              )}
-            </div>
-            <ContinueRow
-              label={verifying ? "Checking..." : "Continue"}
-              disabled={!stepValid || verifying}
-            />
-          </>
-        );
-      case 1:
         return (
           <>
             <QuestionHead
@@ -570,7 +423,7 @@ export default function AugustQueryForm() {
             <ContinueRow />
           </>
         );
-      case 2:
+      case 1:
         return (
           <>
             <QuestionHead step={step} question="What's your budget?" />
@@ -582,7 +435,7 @@ export default function AugustQueryForm() {
             )}
           </>
         );
-      case 3:
+      case 2:
         return (
           <>
             <QuestionHead
@@ -599,6 +452,7 @@ export default function AugustQueryForm() {
                   value={data.name}
                   onChange={(e) => set("name", e.target.value)}
                   placeholder="Full name"
+                  {...noAutofill("name")}
                   className={inputClass}
                 />
               </label>
@@ -609,6 +463,7 @@ export default function AugustQueryForm() {
                   value={data.phone}
                   onChange={(e) => set("phone", e.target.value)}
                   placeholder="(+91) Phone number"
+                  {...noAutofill("phone")}
                   className={inputClass}
                 />
               </label>
@@ -619,6 +474,7 @@ export default function AugustQueryForm() {
                   value={data.city}
                   onChange={(e) => set("city", e.target.value)}
                   placeholder="Where are you based?"
+                  {...noAutofill("city")}
                   className={inputClass}
                 />
               </label>
@@ -629,6 +485,7 @@ export default function AugustQueryForm() {
                   value={data.companyName}
                   onChange={(e) => set("companyName", e.target.value)}
                   placeholder="Company name"
+                  {...noAutofill("company")}
                   className={inputClass}
                 />
               </label>
@@ -638,6 +495,7 @@ export default function AugustQueryForm() {
                   value={data.aboutCompany}
                   onChange={(e) => set("aboutCompany", e.target.value)}
                   placeholder="Anything that helps us understand what you do."
+                  {...noAutofill("about")}
                   rows={3}
                   className={`${inputClass} resize-none`}
                 />
@@ -733,10 +591,7 @@ export default function AugustQueryForm() {
                 // change instead would focus the *outgoing* field, which is
                 // still mounted while AnimatePresence waits for its exit.
                 onAnimationComplete={() => {
-                  // The gate and the details screen are the text ones.
-                  if (step === 0 || step === TOTAL_STEPS - 1) {
-                    firstFieldRef.current?.focus();
-                  }
+                  if (step === TOTAL_STEPS - 1) firstFieldRef.current?.focus();
                 }}
               >
                 {renderStep()}

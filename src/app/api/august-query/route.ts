@@ -20,8 +20,10 @@ const querySchema = z.object({
   phone: z.string().trim().min(1).max(50),
   city: z.string().trim().min(1).max(120),
   aboutCompany: z.string().trim().max(2000).optional(),
-  challengeToken: z.string().min(1).max(500),
-  challengeAnswer: z.string().trim().min(1).max(200),
+  // The form no longer shows the human check. Kept optional rather than
+  // deleted so re-enabling the gate is a form change, not a contract change.
+  challengeToken: z.string().min(1).max(500).optional(),
+  challengeAnswer: z.string().trim().min(1).max(200).optional(),
   // Optional so a submission still succeeds if the browser blocked the pixel.
   meta: metaCaptureSchema.optional(),
 });
@@ -64,22 +66,24 @@ export async function POST(request: Request) {
     meta,
   } = parsed.data;
 
-  const verdict = checkChallengeToken(challengeToken);
-  if (!verdict.ok) {
-    // An aged-out token isn't the user's fault — tell the form to swap in a
-    // fresh question rather than accusing them of a wrong answer.
-    return NextResponse.json(
-      { error: verdict.reason === "expired" ? "challenge_expired" : "challenge_failed" },
-      { status: 422 }
-    );
-  }
-  // A spent token is treated like an expired one: the form quietly swaps in a
-  // new question rather than telling a real person they answered wrong.
-  if (isChallengeTokenUsed(challengeToken)) {
-    return NextResponse.json({ error: "challenge_expired" }, { status: 422 });
-  }
-  if (!matchesAnswer(challengeAnswer, verdict.id)) {
-    return NextResponse.json({ error: "challenge_failed" }, { status: 422 });
+  // Only enforced when a token is supplied. The gate is currently off, but a
+  // submission that does send one still has to get it right.
+  let challengeId: string | null = null;
+  if (challengeToken) {
+    const verdict = checkChallengeToken(challengeToken);
+    if (!verdict.ok) {
+      return NextResponse.json(
+        { error: verdict.reason === "expired" ? "challenge_expired" : "challenge_failed" },
+        { status: 422 }
+      );
+    }
+    if (isChallengeTokenUsed(challengeToken)) {
+      return NextResponse.json({ error: "challenge_expired" }, { status: 422 });
+    }
+    if (!matchesAnswer(challengeAnswer ?? "", verdict.id)) {
+      return NextResponse.json({ error: "challenge_failed" }, { status: 422 });
+    }
+    challengeId = verdict.id;
   }
 
   // Only requests that cleared the human check count against the real limit.
@@ -101,7 +105,7 @@ export async function POST(request: Request) {
     about_brand: aboutCompany || null,
     services,
     budget,
-    challenge_id: verdict.id,
+    challenge_id: challengeId,
     fbp: meta?.fbp ?? null,
     fbc: meta?.fbc ?? null,
     fb_event_id: meta?.eventId ?? null,
@@ -118,7 +122,7 @@ export async function POST(request: Request) {
 
   // Burn the token only now that the row is safely stored, so a failed insert
   // the user retries doesn't cost them their question.
-  markChallengeTokenUsed(challengeToken);
+  if (challengeToken) markChallengeTokenUsed(challengeToken);
 
   // Server-side copy of the browser's Lead event, deduped by the shared event
   // id. Deliberately awaited but never fatal: this is the only copy that
