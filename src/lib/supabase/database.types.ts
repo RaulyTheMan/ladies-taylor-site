@@ -412,6 +412,7 @@ export type Database = {
         Row: {
           buffer_after_minutes: number
           created_at: string
+          current_month_only: boolean
           description: string
           duration_minutes: number
           host_timezone: string
@@ -431,6 +432,7 @@ export type Database = {
         Insert: {
           buffer_after_minutes?: number
           created_at?: string
+          current_month_only?: boolean
           description?: string
           duration_minutes?: number
           host_timezone?: string
@@ -450,6 +452,7 @@ export type Database = {
         Update: {
           buffer_after_minutes?: number
           created_at?: string
+          current_month_only?: boolean
           description?: string
           duration_minutes?: number
           host_timezone?: string
