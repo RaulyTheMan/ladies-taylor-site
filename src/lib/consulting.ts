@@ -14,6 +14,8 @@ export type ConsultationType = {
   hostTimezone: string;
   minNoticeMinutes: number;
   maxDaysAhead: number;
+  /** Only this calendar month is bookable -- enforced in SQL, mirrored in the calendar. */
+  currentMonthOnly: boolean;
 };
 
 /**
@@ -21,7 +23,7 @@ export type ConsultationType = {
  * only column added later doesn't quietly start shipping to every visitor.
  */
 const PUBLIC_COLUMNS =
-  "id, slug, title, description, duration_minutes, price_inr, location_label, host_timezone, min_notice_minutes, max_days_ahead, sort_order";
+  "id, slug, title, description, duration_minutes, price_inr, location_label, host_timezone, min_notice_minutes, max_days_ahead, current_month_only, sort_order";
 
 type PublicRow = {
   id: string;
@@ -34,6 +36,7 @@ type PublicRow = {
   host_timezone: string;
   min_notice_minutes: number;
   max_days_ahead: number;
+  current_month_only: boolean;
   sort_order: number;
 };
 
@@ -49,6 +52,7 @@ function mapType(row: PublicRow): ConsultationType {
     hostTimezone: row.host_timezone,
     minNoticeMinutes: row.min_notice_minutes,
     maxDaysAhead: row.max_days_ahead,
+    currentMonthOnly: row.current_month_only,
   };
 }
 

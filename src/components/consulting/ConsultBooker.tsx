@@ -51,11 +51,27 @@ export default function ConsultBooker({ type }: { type: ConsultationType }) {
   const abortRef = useRef<AbortController | null>(null);
   const loadedRef = useRef<Set<string>>(new Set());
 
+  // Only a navigation limit. The real rule lives in consultation_open_slots(),
+  // which refuses out-of-range slots at hold time whatever the calendar shows.
   const maxDate = useMemo(() => {
     const d = new Date();
     d.setDate(d.getDate() + type.maxDaysAhead);
+    if (type.currentMonthOnly) {
+      const endOfMonth = new Date();
+      endOfMonth.setMonth(endOfMonth.getMonth() + 1, 0);
+      if (endOfMonth < d) return endOfMonth;
+    }
     return d;
-  }, [type.maxDaysAhead]);
+  }, [type.maxDaysAhead, type.currentMonthOnly]);
+
+  // Month name the booker can move on to, or null when this session is locked
+  // to the current month and there is nowhere to go.
+  const nextMonth = useMemo(() => {
+    const next = new Date(month);
+    next.setMonth(next.getMonth() + 1, 1);
+    return next;
+  }, [month]);
+  const canGoNext = nextMonth <= maxDate;
 
   const key = monthKey(month);
   const current = months[key];
@@ -315,6 +331,10 @@ export default function ConsultBooker({ type }: { type: ConsultationType }) {
                   setPayError(null);
                 }}
                 onRetry={() => void refetchMonth(month)}
+                monthEmpty={slotState === "ready" && availableDays.size === 0}
+                monthLabel={month.toLocaleDateString("en-GB", { month: "long" })}
+                nextMonthLabel={nextMonth.toLocaleDateString("en-GB", { month: "long" })}
+                canGoNext={canGoNext}
                 onNextMonth={() => {
                   const next = new Date(month);
                   next.setMonth(next.getMonth() + 1);

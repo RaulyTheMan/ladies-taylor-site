@@ -12,6 +12,10 @@ export default function ConsultSlotColumn({
   onPick,
   onRetry,
   onNextMonth,
+  monthEmpty,
+  monthLabel,
+  nextMonthLabel,
+  canGoNext,
 }: {
   slots: string[];
   state: SlotState;
@@ -20,6 +24,12 @@ export default function ConsultSlotColumn({
   onPick: (iso: string) => void;
   onRetry: () => void;
   onNextMonth: () => void;
+  /** The visible month has loaded and has nothing bookable in it. */
+  monthEmpty: boolean;
+  monthLabel: string;
+  nextMonthLabel: string;
+  /** False when the session only takes bookings for the current month. */
+  canGoNext: boolean;
 }) {
   if (state === "error") {
     // Never a silent empty state. A blank column reads as "he has no
@@ -52,6 +62,36 @@ export default function ConsultSlotColumn({
     );
   }
 
+  // Checked before "pick a date": when every day is disabled, telling someone to
+  // pick one is a dead end.
+  if (monthEmpty) {
+    return (
+      <div className="p-4">
+        {canGoNext ? (
+          <>
+            <p className="text-sm text-black/60">Nothing open in {monthLabel}.</p>
+            <button
+              type="button"
+              onClick={onNextMonth}
+              className="mt-2 text-sm font-semibold text-black underline underline-offset-2"
+            >
+              Try {nextMonthLabel}
+            </button>
+          </>
+        ) : (
+          <>
+            <p className="text-sm font-semibold text-black">
+              No times left in {monthLabel}.
+            </p>
+            <p className="mt-1 text-sm text-black/60">
+              Bookings for {nextMonthLabel} open on 1 {nextMonthLabel}.
+            </p>
+          </>
+        )}
+      </div>
+    );
+  }
+
   if (!selectedDay) {
     return (
       <div className="p-4">
@@ -64,13 +104,15 @@ export default function ConsultSlotColumn({
     return (
       <div className="p-4">
         <p className="text-sm text-black/60">Nothing open on this day.</p>
-        <button
-          type="button"
-          onClick={onNextMonth}
-          className="mt-2 text-sm font-semibold text-black underline underline-offset-2"
-        >
-          Try next month
-        </button>
+        {canGoNext && (
+          <button
+            type="button"
+            onClick={onNextMonth}
+            className="mt-2 text-sm font-semibold text-black underline underline-offset-2"
+          >
+            Try {nextMonthLabel}
+          </button>
+        )}
       </div>
     );
   }
