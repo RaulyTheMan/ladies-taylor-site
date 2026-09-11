@@ -39,3 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Standalone consultation admin app -- its own repo and Vercel project.
+# Never commit it into the site repo; the two must not tangle.
+/Consultation/

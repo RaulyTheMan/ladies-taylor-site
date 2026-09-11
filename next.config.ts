@@ -1,6 +1,11 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // The standalone consulting admin lives in ./Consultation with its own
+  // lockfile. Without pinning the root, Turbopack walks up past this project
+  // looking for one and picks the wrong directory.
+  turbopack: { root: __dirname },
+
   images: {
     remotePatterns: [
       {

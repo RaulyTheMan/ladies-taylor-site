@@ -3,10 +3,12 @@ import { SITE_URL } from "@/lib/site";
 import { getBrands } from "@/lib/brands";
 import { getEvents } from "@/lib/events";
 import { getPosts } from "@/lib/posts";
+import { getConsultationTypes } from "@/lib/consulting";
 
 const STATIC_ROUTES = [
   "",
   "/best-of-bands",
+  "/consulting",
   "/events",
   "/press-media",
   "/our-friends",
@@ -18,10 +20,11 @@ const STATIC_ROUTES = [
 ];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [brands, events, posts] = await Promise.all([
+  const [brands, events, posts, consultationTypes] = await Promise.all([
     getBrands(),
     getEvents(),
     getPosts(),
+    getConsultationTypes(),
   ]);
 
   const staticEntries: MetadataRoute.Sitemap = STATIC_ROUTES.map((path) => ({
@@ -50,5 +53,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: new Date(),
     }));
 
-  return [...staticEntries, ...brandEntries, ...eventEntries, ...postEntries];
+  // Booking pages themselves (/consulting/booking/<token>) are noindex and
+  // deliberately absent — a manage token must never end up in a sitemap.
+  const consultingEntries: MetadataRoute.Sitemap = consultationTypes.map((type) => ({
+    url: `${SITE_URL}/consulting/${type.slug}`,
+    lastModified: new Date(),
+  }));
+
+  return [
+    ...staticEntries,
+    ...brandEntries,
+    ...eventEntries,
+    ...postEntries,
+    ...consultingEntries,
+  ];
 }
