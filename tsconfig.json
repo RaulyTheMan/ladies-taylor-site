@@ -30,5 +30,11 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts"
   ],
-  "exclude": ["node_modules"]
+  "exclude": [
+    "node_modules",
+    // The standalone consulting admin is a separate project with its own
+    // tsconfig and its own @/* root. Without this, its files are compiled
+    // against THIS src/ and every import fails to resolve.
+    "Consultation"
+  ]
 }

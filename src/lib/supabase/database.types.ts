@@ -212,6 +212,262 @@ export type Database = {
         }
         Relationships: []
       }
+      consultation_availability: {
+        Row: {
+          consultation_type_id: string | null
+          created_at: string
+          end_time: string
+          id: string
+          start_time: string
+          updated_at: string
+          weekday: number
+        }
+        Insert: {
+          consultation_type_id?: string | null
+          created_at?: string
+          end_time: string
+          id?: string
+          start_time: string
+          updated_at?: string
+          weekday: number
+        }
+        Update: {
+          consultation_type_id?: string | null
+          created_at?: string
+          end_time?: string
+          id?: string
+          start_time?: string
+          updated_at?: string
+          weekday?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "consultation_availability_consultation_type_id_fkey"
+            columns: ["consultation_type_id"]
+            isOneToOne: false
+            referencedRelation: "consultation_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      consultation_blackouts: {
+        Row: {
+          blocked_range: unknown
+          created_at: string
+          ends_at: string
+          id: string
+          is_all_day: boolean
+          reason: string | null
+          starts_at: string
+          updated_at: string
+        }
+        Insert: {
+          blocked_range?: unknown
+          created_at?: string
+          ends_at: string
+          id?: string
+          is_all_day?: boolean
+          reason?: string | null
+          starts_at: string
+          updated_at?: string
+        }
+        Update: {
+          blocked_range?: unknown
+          created_at?: string
+          ends_at?: string
+          id?: string
+          is_all_day?: boolean
+          reason?: string | null
+          starts_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      consultation_bookings: {
+        Row: {
+          admin_notes: string | null
+          amount_inr: number
+          blocked_range: unknown
+          blocked_until: string
+          buffer_after_minutes: number
+          cancellation_reason: string | null
+          cancelled_at: string | null
+          cancelled_by: string | null
+          consultation_type_id: string
+          created_at: string
+          duration_minutes: number
+          email: string
+          end_at: string
+          event_source_url: string | null
+          fb_event_id: string | null
+          fbc: string | null
+          fbp: string | null
+          guest_timezone: string | null
+          hold_expires_at: string
+          host_contacted_at: string | null
+          id: string
+          last_payment_error: string | null
+          manage_token: string
+          name: string
+          notes: string | null
+          paid_at: string | null
+          phone: string
+          razorpay_order_id: string | null
+          razorpay_payment_id: string | null
+          razorpay_signature: string | null
+          refund_id: string | null
+          refund_status: string | null
+          refunded_at: string | null
+          start_at: string
+          status: Database["public"]["Enums"]["booking_status"]
+          updated_at: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          amount_inr: number
+          blocked_range?: unknown
+          blocked_until: string
+          buffer_after_minutes?: number
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
+          consultation_type_id: string
+          created_at?: string
+          duration_minutes: number
+          email: string
+          end_at: string
+          event_source_url?: string | null
+          fb_event_id?: string | null
+          fbc?: string | null
+          fbp?: string | null
+          guest_timezone?: string | null
+          hold_expires_at: string
+          host_contacted_at?: string | null
+          id?: string
+          last_payment_error?: string | null
+          manage_token?: string
+          name: string
+          notes?: string | null
+          paid_at?: string | null
+          phone: string
+          razorpay_order_id?: string | null
+          razorpay_payment_id?: string | null
+          razorpay_signature?: string | null
+          refund_id?: string | null
+          refund_status?: string | null
+          refunded_at?: string | null
+          start_at: string
+          status?: Database["public"]["Enums"]["booking_status"]
+          updated_at?: string
+        }
+        Update: {
+          admin_notes?: string | null
+          amount_inr?: number
+          blocked_range?: unknown
+          blocked_until?: string
+          buffer_after_minutes?: number
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
+          consultation_type_id?: string
+          created_at?: string
+          duration_minutes?: number
+          email?: string
+          end_at?: string
+          event_source_url?: string | null
+          fb_event_id?: string | null
+          fbc?: string | null
+          fbp?: string | null
+          guest_timezone?: string | null
+          hold_expires_at?: string
+          host_contacted_at?: string | null
+          id?: string
+          last_payment_error?: string | null
+          manage_token?: string
+          name?: string
+          notes?: string | null
+          paid_at?: string | null
+          phone?: string
+          razorpay_order_id?: string | null
+          razorpay_payment_id?: string | null
+          razorpay_signature?: string | null
+          refund_id?: string | null
+          refund_status?: string | null
+          refunded_at?: string | null
+          start_at?: string
+          status?: Database["public"]["Enums"]["booking_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "consultation_bookings_consultation_type_id_fkey"
+            columns: ["consultation_type_id"]
+            isOneToOne: false
+            referencedRelation: "consultation_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      consultation_types: {
+        Row: {
+          buffer_after_minutes: number
+          created_at: string
+          description: string
+          duration_minutes: number
+          host_timezone: string
+          id: string
+          is_published: boolean
+          location_label: string
+          max_days_ahead: number
+          min_notice_minutes: number
+          payment_page_url: string | null
+          price_inr: number
+          slot_interval_minutes: number
+          slug: string
+          sort_order: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          buffer_after_minutes?: number
+          created_at?: string
+          description?: string
+          duration_minutes?: number
+          host_timezone?: string
+          id?: string
+          is_published?: boolean
+          location_label?: string
+          max_days_ahead?: number
+          min_notice_minutes?: number
+          payment_page_url?: string | null
+          price_inr?: number
+          slot_interval_minutes?: number
+          slug: string
+          sort_order?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          buffer_after_minutes?: number
+          created_at?: string
+          description?: string
+          duration_minutes?: number
+          host_timezone?: string
+          id?: string
+          is_published?: boolean
+          location_label?: string
+          max_days_ahead?: number
+          min_notice_minutes?: number
+          payment_page_url?: string | null
+          price_inr?: number
+          slot_interval_minutes?: number
+          slug?: string
+          sort_order?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       contact_submissions: {
         Row: {
           created_at: string
@@ -595,6 +851,85 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      cancel_consultation_booking: {
+        Args: { p_reason?: string; p_token: string }
+        Returns: Database["public"]["Enums"]["booking_status"]
+      }
+      confirm_consultation_booking: {
+        Args: {
+          p_amount_paise?: number
+          p_booking_id: string
+          p_order_id?: string
+          p_payment_id: string
+        }
+        Returns: {
+          booking_id: string
+          manage_token: string
+          needs_refund: boolean
+          status: Database["public"]["Enums"]["booking_status"]
+          was_already_confirmed: boolean
+        }[]
+      }
+      consultation_open_slots: {
+        Args: { p_from: string; p_to: string; p_type_id: string }
+        Returns: {
+          starts_at: string
+        }[]
+      }
+      expire_consultation_holds: { Args: never; Returns: number }
+      get_consultation_booking: {
+        Args: { p_token: string }
+        Returns: {
+          amount_inr: number
+          can_cancel: boolean
+          cancelled_at: string
+          duration_minutes: number
+          email: string
+          end_at: string
+          guest_timezone: string
+          hold_expires_at: string
+          id: string
+          location_label: string
+          name: string
+          notes: string
+          phone: string
+          refund_id: string
+          slug: string
+          start_at: string
+          status: Database["public"]["Enums"]["booking_status"]
+          title: string
+        }[]
+      }
+      hold_consultation_slot: {
+        Args: {
+          p_email: string
+          p_event_source_url?: string
+          p_fb_event_id?: string
+          p_fbc?: string
+          p_fbp?: string
+          p_name: string
+          p_notes?: string
+          p_phone: string
+          p_slug: string
+          p_start: string
+          p_timezone?: string
+        }
+        Returns: {
+          amount_inr: number
+          booking_id: string
+          end_at: string
+          hold_expires_at: string
+          manage_token: string
+          start_at: string
+          title: string
+        }[]
+      }
+      list_consultation_slots: {
+        Args: { p_from: string; p_slug: string; p_to: string }
+        Returns: {
+          starts_at: string
+        }[]
+      }
       get_event_registration_counts: {
         Args: { p_event_id: string }
         Returns: {
@@ -617,6 +952,12 @@ export type Database = {
       }
     }
     Enums: {
+      booking_status:
+        | "pending_payment"
+        | "confirmed"
+        | "expired"
+        | "payment_failed"
+        | "cancelled"
       registration_status: "registered" | "waiting" | "cancelled"
       window_kind:
         | "video"
@@ -753,6 +1094,13 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      booking_status: [
+        "pending_payment",
+        "confirmed",
+        "expired",
+        "payment_failed",
+        "cancelled",
+      ],
       registration_status: ["registered", "waiting", "cancelled"],
       window_kind: [
         "video",
