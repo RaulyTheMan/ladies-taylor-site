@@ -6,6 +6,7 @@ export type StudioIconKey =
   | "brands"
   | "events"
   | "subscribers"
+  | "applications"
   | "media";
 
 export type StudioNavItem = {
@@ -49,6 +50,11 @@ export const STUDIO_NAV: StudioNavGroup[] = [
         label: "Subscribers",
         href: "/admin/subscribers",
         iconKey: "subscribers",
+      },
+      {
+        label: "Mera Brand Maro",
+        href: "/admin/mera-brand-maro",
+        iconKey: "applications",
       },
     ],
   },
