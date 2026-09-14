@@ -11,6 +11,7 @@ import {
   Tags,
   CalendarDays,
   Mail,
+  Sparkles,
   Image as ImageIcon,
   ExternalLink,
   Menu as MenuIcon,
@@ -47,6 +48,7 @@ const ICONS: Record<StudioIconKey, React.ComponentType<{ className?: string }>> 
   brands: Tags,
   events: CalendarDays,
   subscribers: Mail,
+  applications: Sparkles,
   media: ImageIcon,
 };
 

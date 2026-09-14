@@ -13,13 +13,16 @@ export const dynamic = "force-dynamic";
 export default async function StudioDashboardPage() {
   const supabase = await createSessionClient();
 
-  const [events, brands, posts, windows, subscribers] = await Promise.all([
+  const [events, brands, posts, windows, subscribers, meraBrandMaro] = await Promise.all([
     supabase.from("events").select("*", { count: "exact", head: true }),
     supabase.from("brands").select("*", { count: "exact", head: true }),
     supabase.from("blog_posts").select("*", { count: "exact", head: true }),
     supabase.from("desktop_windows").select("*", { count: "exact", head: true }),
     supabase
       .from("newsletter_subscribers")
+      .select("*", { count: "exact", head: true }),
+    supabase
+      .from("mera_brand_maro_submissions")
       .select("*", { count: "exact", head: true }),
   ]);
 
@@ -29,6 +32,7 @@ export default async function StudioDashboardPage() {
     { label: "Brands", href: "/admin/brands", count: brands.count },
     { label: "Events", href: "/admin/events", count: events.count },
     { label: "Subscribers", href: "/admin/subscribers", count: subscribers.count },
+    { label: "Mera Brand Maro", href: "/admin/mera-brand-maro", count: meraBrandMaro.count },
   ];
 
   return (
@@ -38,7 +42,7 @@ export default async function StudioDashboardPage() {
         description="Everything the website publishes."
       />
 
-      <div className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-5">
+      <div className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-6">
         {cards.map((card) => (
           <Link
             key={card.href}

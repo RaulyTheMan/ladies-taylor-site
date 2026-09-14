@@ -757,6 +757,48 @@ export type Database = {
         }
         Relationships: []
       }
+      mera_brand_maro_submissions: {
+        Row: {
+          about_brand: string
+          brand_name: string
+          created_at: string
+          email: string
+          id: string
+          name: string
+          phone: string
+          terms_accepted_at: string
+          terms_version: string
+          website_url: string | null
+          why_no_budget: string
+        }
+        Insert: {
+          about_brand: string
+          brand_name: string
+          created_at?: string
+          email: string
+          id?: string
+          name: string
+          phone: string
+          terms_accepted_at?: string
+          terms_version: string
+          website_url?: string | null
+          why_no_budget: string
+        }
+        Update: {
+          about_brand?: string
+          brand_name?: string
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          phone?: string
+          terms_accepted_at?: string
+          terms_version?: string
+          website_url?: string | null
+          why_no_budget?: string
+        }
+        Relationships: []
+      }
       newsletter_subscribers: {
         Row: {
           created_at: string
